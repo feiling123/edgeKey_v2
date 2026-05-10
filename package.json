@@ -13,7 +13,8 @@
     "db:seed:remote": "wrangler d1 execute DB --remote --file=./scripts/seed.sql -y",
     "verify:payments": "tsx scripts/verify-payment-adapters.ts",
     "verify:payment-notify": "tsx scripts/verify-payment-notify.ts",
-    "deploy": "npm run db:migrations:remote && npm run db:seed:remote && wrangler deploy",
+    "deploy": "wrangler deploy",
+    "deploy:full": "npm run db:migrations:remote && npm run db:seed:remote && wrangler deploy",
     "up": "vike build && wrangler deploy",
     "types": "wrangler types"
   },

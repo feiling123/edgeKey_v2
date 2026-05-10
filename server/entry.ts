@@ -1,4 +1,5 @@
 import { authjsHandler, authjsSessionMiddleware } from "./authjs-handler";
+import { ensureD1Ready } from "./d1-bootstrap";
 import { getPrismaForD1 } from "./prisma-factory";
 import { telefuncHandler } from "./telefunc-handler";
 import { prismaMiddleware } from "./prisma-middleware";
@@ -78,6 +79,7 @@ export function createApp() {
   apiApp.use("*", async (c, next) => {
     const database = (c.env as { DB?: D1Database } | undefined)?.DB;
     if (database) {
+      await ensureD1Ready(database);
       const prisma = getPrismaForD1(database);
 
       (c as any).set("universalContext", {

@@ -1,5 +1,6 @@
 import { enhance, type UniversalMiddleware } from "@universal-middleware/core";
 import { internalServerError } from "../lib/app-error";
+import { ensureD1Ready } from "./d1-bootstrap";
 import { getPrismaForD1 } from "./prisma-factory";
 
 interface PrismaEnv {
@@ -34,6 +35,7 @@ export const prismaMiddleware: UniversalMiddleware = enhance(
       });
     }
 
+    await ensureD1Ready(database);
     const prisma = getPrismaForD1(database);
 
     const honoContext = (runtime as any)?.hono?.context;

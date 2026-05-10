@@ -1,5 +1,5 @@
 -- seed.sql
--- 此脚本由 deploy 脚本在每次部署时自动执行（bun run db:seed:remote）。
+-- 此脚本由运行时 D1 初始化执行；手动全量部署时也可由 db:seed:remote 执行。
 -- 所有语句均使用 ON CONFLICT DO NOTHING，即：记录不存在时插入初始数据，已存在时跳过。
 -- 因此重复部署不会覆盖你在后台修改过的任何数据。
 

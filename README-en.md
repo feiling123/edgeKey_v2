@@ -51,25 +51,15 @@ Three deployment methods are supported, ordered by recommendation:
 
 ### Git-Connected Cloudflare Auto Deploy
 
-If you use Cloudflare Workers' Git integration (auto-deploy on GitHub/GitLab push), complete these prerequisites first:
-
-**0. Prerequisite: Create a D1 Database in Cloudflare Dashboard**
-
-1. Go to [dash.cloudflare.com](https://dash.cloudflare.com) → **Storage & Databases** → **D1**
-2. Click **Create**, name it `edgekey-db`
-3. Note the `database_id` from the database detail page — you'll need it in the deploy command
-
-Table schema and seed data are initialized automatically by the `deploy` script on first deploy.
-
-**1. Deploy Command**
-
-Since `wrangler.jsonc` requires your actual D1 `database_id`, set the build command in Cloudflare's "Build Configuration" to:
+If you use Cloudflare Workers' Git integration (auto-deploy on GitHub/GitLab push), keep the deploy command as:
 
 ```bash
-sed -i 's/"database_name": "edgekey-db"/"database_name": "edgekey-db", "database_id": "YOUR_DATABASE_ID"/' wrangler.jsonc && npm run deploy
+npm run deploy
 ```
 
-Replace `YOUR_DATABASE_ID` with your actual D1 database ID (found in Cloudflare Dashboard → D1 → database detail page).
+`npm run deploy` only runs `wrangler deploy`. It does not run D1 migrations during the build stage, so GitHub-triggered auto deploys do not fail when `wrangler.jsonc` has no `database_id`. The Worker initializes the D1 schema and seed data automatically on the first request or first Cron run.
+
+If you manually created a D1 database and added its `database_id` to `wrangler.jsonc`, you can still use `npm run deploy:full` locally for the classic migration + seed + deploy flow.
 
 **2. Configure AUTH_SECRET Environment Variable**
 

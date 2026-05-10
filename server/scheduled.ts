@@ -1,4 +1,5 @@
 import { getPrismaForD1 } from "./prisma-factory";
+import { ensureD1Ready } from "./d1-bootstrap";
 import { autoCloseExpiredOrders } from "../modules/order/service";
 import { logger } from "../lib/logger";
 
@@ -23,6 +24,7 @@ export async function scheduled(
     return;
   }
 
+  await ensureD1Ready(database);
   const prisma = getPrismaForD1(database);
 
   try {

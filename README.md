@@ -81,23 +81,17 @@ git push origin main
 
 如果你使用 Cloudflare Workers 的 Git 集成（连接 GitHub/GitLab 仓库自动部署），需要先完成以下前置步骤：
 
-**0. 前置：在 Cloudflare Dashboard 创建 D1 数据库**
-
-1. 进入 [dash.cloudflare.com](https://dash.cloudflare.com) → **Storage & Databases** → **D1**
-2. 点击 **Create** 创建数据库，名称填 `edgekey-db`
-3. 记录数据库详情页中的 `database_id`，后续部署命令中需要用到
-
-数据库表结构和种子数据会在首次部署时由 `deploy` 脚本自动完成初始化，无需手动操作。
-
 **1. 部署命令**
 
-由于 `wrangler.jsonc` 中的 `database_id` 需要与你的实际 D1 数据库绑定，Git 自动部署时请在 Cloudflare 的"构建配置"中将部署命令设置为：
+Git 自动部署时，Cloudflare 的"部署命令"保持为：
 
 ```bash
-sed -i 's/"database_name": "edgekey-db"/"database_name": "edgekey-db", "database_id": "你的database_id"/' wrangler.jsonc && npm run deploy
+npm run deploy
 ```
 
-将 `你的database_id` 替换为你的实际 D1 数据库 ID（可在 Cloudflare Dashboard → D1 → 数据库详情页找到）。
+`npm run deploy` 只执行 `wrangler deploy`，不会在构建阶段运行 D1 migration，因此不会因为 `wrangler.jsonc` 中没有 `database_id` 导致 GitHub 自动更新失败。D1 表结构和初始数据会在 Worker 首次请求或 Cron 首次触发时自动初始化。
+
+如果你手动创建了 D1，并且已经把 `database_id` 写入 `wrangler.jsonc`，也可以在本地使用 `npm run deploy:full` 执行传统的 migration + seed + deploy 流程。
 
 **2. 配置 AUTH_SECRET 环境变量**
 
