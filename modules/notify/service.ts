@@ -11,6 +11,7 @@ import {
   createTelegramConfigRecord,
   createTelegramLogRecord,
   deleteTelegramConfigRecord,
+  detachTelegramLogsFromConfig,
   getActiveTelegramConfigRecord,
   getTelegramConfigRecordById,
   listTelegramConfigRecords,
@@ -387,6 +388,7 @@ export async function deleteTelegramConfig(id: number) {
     throw badRequestError("Telegram Bot 配置不存在", "TELEGRAM_CONFIG_NOT_FOUND");
   }
 
+  await detachTelegramLogsFromConfig(context.prisma, id);
   await deleteTelegramConfigRecord(context.prisma, id);
   await logAdminOperation({
     action: "DELETE_TELEGRAM_CONFIG",

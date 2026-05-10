@@ -72,6 +72,13 @@ export function deleteTelegramConfigRecord(prisma: PrismaClient, id: number) {
   });
 }
 
+export async function detachTelegramLogsFromConfig(prisma: PrismaClient, configId: number) {
+  return prisma.telegramLog.updateMany({
+    where: { configId },
+    data: { configId: null },
+  });
+}
+
 export async function activateTelegramConfigById(prisma: PrismaClient, id: number) {
   const now = new Date();
   await prisma.telegramConfig.updateMany({
