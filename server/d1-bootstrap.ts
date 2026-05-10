@@ -1,7 +1,6 @@
 import { logger } from "../lib/logger";
 import migration0001 from "../prisma/migrations/0001_init.sql?raw";
 import migration0002 from "../prisma/migrations/0002_runtime_secret.sql?raw";
-import seedSql from "../scripts/seed.sql?raw";
 
 const bootstrapPromises = new WeakMap<D1Database, Promise<void>>();
 const migrationTable = "__edgekey_runtime_migrations";
@@ -24,12 +23,11 @@ export function ensureD1Ready(database: D1Database) {
 }
 
 async function bootstrapD1(database: D1Database) {
-  await database.exec(`
-    CREATE TABLE IF NOT EXISTS "${migrationTable}" (
-      "id" TEXT NOT NULL PRIMARY KEY,
-      "appliedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-    );
-  `);
+  await database
+    .prepare(
+      `CREATE TABLE IF NOT EXISTS "${migrationTable}" ("id" TEXT NOT NULL PRIMARY KEY, "appliedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`,
+    )
+    .run();
 
   const appliedRows = await database
     .prepare(`SELECT "id" FROM "${migrationTable}"`)
@@ -39,14 +37,14 @@ async function bootstrapD1(database: D1Database) {
   for (const migration of migrations) {
     if (applied.has(migration.id)) continue;
 
-    await database.exec(migration.sql);
+    await executeSqlScript(database, migration.sql);
     await database
       .prepare(`INSERT OR REPLACE INTO "${migrationTable}" ("id", "appliedAt") VALUES (?, CURRENT_TIMESTAMP)`)
       .bind(migration.id)
       .run();
   }
 
-  await database.exec(seedSql);
+  await seedD1(database);
 
   logger.info("d1.bootstrap.completed");
 }
@@ -56,4 +54,200 @@ function toIdempotentSql(sql: string) {
     .replace(/CREATE UNIQUE INDEX\s+"/g, 'CREATE UNIQUE INDEX IF NOT EXISTS "')
     .replace(/CREATE INDEX\s+"/g, 'CREATE INDEX IF NOT EXISTS "')
     .replace(/CREATE TABLE\s+"/g, 'CREATE TABLE IF NOT EXISTS "');
+}
+
+async function executeSqlScript(database: D1Database, sql: string) {
+  for (const statement of splitSqlStatements(sql)) {
+    await database.prepare(normalizeSql(statement)).run();
+  }
+}
+
+function splitSqlStatements(sql: string) {
+  const statements: string[] = [];
+  let current = "";
+  let quote: "'" | '"' | null = null;
+  let lineComment = false;
+  let blockComment = false;
+
+  for (let index = 0; index < sql.length; index += 1) {
+    const char = sql[index] ?? "";
+    const next = sql[index + 1] ?? "";
+
+    if (lineComment) {
+      if (char === "\n") {
+        lineComment = false;
+        current += " ";
+      }
+      continue;
+    }
+
+    if (blockComment) {
+      if (char === "*" && next === "/") {
+        blockComment = false;
+        index += 1;
+      }
+      continue;
+    }
+
+    if (!quote && char === "-" && next === "-") {
+      lineComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (!quote && char === "/" && next === "*") {
+      blockComment = true;
+      index += 1;
+      continue;
+    }
+
+    if (quote) {
+      current += char;
+      if (char === quote) {
+        if (quote === "'" && next === "'") {
+          current += next;
+          index += 1;
+        } else {
+          quote = null;
+        }
+      }
+      continue;
+    }
+
+    if (char === "'" || char === '"') {
+      quote = char;
+      current += char;
+      continue;
+    }
+
+    if (char === ";") {
+      const statement = current.trim();
+      if (statement) statements.push(statement);
+      current = "";
+      continue;
+    }
+
+    current += char;
+  }
+
+  const finalStatement = current.trim();
+  if (finalStatement) statements.push(finalStatement);
+
+  return statements;
+}
+
+function normalizeSql(sql: string) {
+  let normalized = "";
+  let quote: "'" | '"' | null = null;
+  let lastWasSpace = false;
+
+  for (let index = 0; index < sql.length; index += 1) {
+    const char = sql[index] ?? "";
+    const next = sql[index + 1] ?? "";
+
+    if (quote) {
+      normalized += char;
+      if (char === quote) {
+        if (quote === "'" && next === "'") {
+          normalized += next;
+          index += 1;
+        } else {
+          quote = null;
+        }
+      }
+      continue;
+    }
+
+    if (char === "'" || char === '"') {
+      quote = char;
+      normalized += char;
+      lastWasSpace = false;
+      continue;
+    }
+
+    if (/\s/.test(char)) {
+      if (!lastWasSpace) {
+        normalized += " ";
+        lastWasSpace = true;
+      }
+      continue;
+    }
+
+    normalized += char;
+    lastWasSpace = false;
+  }
+
+  return normalized.trim();
+}
+
+async function seedD1(database: D1Database) {
+  await database
+    .prepare(
+      `INSERT INTO "Admin" ("username", "passwordHash", "nickname", "status", "updatedAt") VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT("username") DO NOTHING`,
+    )
+    .bind("admin", "$2b$10$viMe8RgcpM30gmmF9OpOcuA/QgleSIUk5VRtqjOulfSIbgK5jQCI6", "管理员", "ACTIVE")
+    .run();
+
+  await database
+    .prepare(
+      `INSERT INTO "SiteSetting" ("id", "siteName", "siteSubtitle", "notice", "updatedAt") VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) ON CONFLICT("id") DO NOTHING`,
+    )
+    .bind(1, "EK发卡商城", "Cloudflare Workers 免费部署自动发卡商城", "全球部署，一触即达。")
+    .run();
+
+  const templates = [
+    {
+      scene: "TEST",
+      name: "测试通知",
+      content: `Telegram 测试通知
+
+站点：{{siteName}}
+发送时间：{{sentAt}}
+
+{{customContent}}`,
+    },
+    {
+      scene: "ORDER_PAID",
+      name: "收款成功通知",
+      content: `收款成功通知
+
+订单号：{{orderNo}}
+商品：{{productName}}
+金额：{{amount}}
+查询地址：{{queryUrl}}`,
+    },
+    {
+      scene: "DELIVERY_SUCCESS",
+      name: "发货成功通知",
+      content: `发货成功通知
+
+订单号：{{orderNo}}
+商品：{{productName}}
+数量：{{quantity}}
+发货内容：
+{{deliveryItems}}
+
+查询地址：{{queryUrl}}`,
+    },
+    {
+      scene: "DELIVERY_FAILED",
+      name: "发货失败告警",
+      content: `发货失败告警
+
+订单号：{{orderNo}}
+商品：{{productName}}
+失败原因：{{errorMessage}}
+
+查询地址：{{queryUrl}}`,
+    },
+  ];
+
+  for (const template of templates) {
+    await database
+      .prepare(
+        `INSERT INTO "TelegramTemplate" ("scene", "name", "content", "isEnabled", "updatedAt") VALUES (?, ?, ?, true, CURRENT_TIMESTAMP) ON CONFLICT("scene") DO NOTHING`,
+      )
+      .bind(template.scene, template.name, template.content)
+      .run();
+  }
 }
