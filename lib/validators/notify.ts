@@ -54,7 +54,7 @@ export function validateTelegramConfigInput(input: any) {
     botToken,
     chatId,
     apiBaseUrl: normalizeApiBaseUrl(input.apiBaseUrl),
-    parseMode: parseMode as "NONE" | "HTML" | "MARKDOWN_V2",
+    parseMode: "NONE" as const,
     isEnabled: Boolean(input.isEnabled),
     notifyOrderPaid: input.notifyOrderPaid !== false,
     notifyDeliverySuccess: input.notifyDeliverySuccess !== false,

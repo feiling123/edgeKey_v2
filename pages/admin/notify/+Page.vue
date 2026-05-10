@@ -211,11 +211,9 @@
             <input v-model="configForm.chatId" class="input input-bordered w-full" placeholder="-1001234567890" />
           </label>
           <label class="flex flex-col gap-1.5">
-            <span class="label-text font-medium">Parse Mode</span>
+            <span class="label-text font-medium">{{ l("发送格式", "Send Format") }}</span>
             <select v-model="configForm.parseMode" class="select select-bordered w-full">
               <option value="NONE">{{ l("纯文本", "Plain Text") }}</option>
-              <option value="HTML">HTML</option>
-              <option value="MARKDOWN_V2">MarkdownV2</option>
             </select>
           </label>
           <label class="flex flex-col gap-1.5 md:col-span-2">
@@ -412,7 +410,7 @@ function assignConfigForm(value: TelegramConfigItem) {
     botToken: value.botToken ?? "",
     chatId: value.chatId ?? "",
     apiBaseUrl: value.apiBaseUrl || "https://api.telegram.org",
-    parseMode: value.parseMode || "NONE",
+    parseMode: "NONE",
     isEnabled: Boolean(value.isEnabled),
     notifyOrderPaid: value.notifyOrderPaid,
     notifyDeliverySuccess: value.notifyDeliverySuccess,

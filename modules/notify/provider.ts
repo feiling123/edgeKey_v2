@@ -1,31 +1,8 @@
 import { badRequestError, externalServiceError } from "../../lib/app-error";
-import type { TelegramConfigValue, TelegramParseMode, TelegramProviderAdapter, TelegramSendInput } from "./types";
+import type { TelegramConfigValue, TelegramProviderAdapter, TelegramSendInput } from "./types";
 
 function normalizeBaseUrl(value: string) {
   return value.trim().replace(/\/+$/, "") || "https://api.telegram.org";
-}
-
-function resolveTelegramParseMode(mode?: TelegramParseMode) {
-  if (!mode || mode === "NONE") return undefined;
-  if (mode === "MARKDOWN_V2") return "MarkdownV2";
-  return "HTML";
-}
-
-function escapeMarkdownV2(text: string) {
-  return text.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
-}
-
-function escapeHtml(text: string) {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-function formatTextForParseMode(text: string, mode?: TelegramParseMode) {
-  if (mode === "MARKDOWN_V2") return escapeMarkdownV2(text);
-  if (mode === "HTML") return escapeHtml(text);
-  return text;
 }
 
 async function parseJsonSafely(response: Response) {
@@ -53,16 +30,11 @@ export function createTelegramAdapter(config: TelegramConfigValue): TelegramProv
         throw badRequestError("Telegram Chat ID 不能为空", "TELEGRAM_CHAT_ID_REQUIRED");
       }
 
-      const sourceParseMode = input.parseMode ?? config.parseMode;
-      const parseMode = resolveTelegramParseMode(sourceParseMode);
       const body: Record<string, unknown> = {
         chat_id: chatId,
-        text: trimMessage(formatTextForParseMode(input.text, sourceParseMode)),
+        text: trimMessage(input.text),
         disable_web_page_preview: true,
       };
-      if (parseMode) {
-        body.parse_mode = parseMode;
-      }
 
       const response = await fetch(`${normalizeBaseUrl(config.apiBaseUrl)}/bot${config.botToken}/sendMessage`, {
         method: "POST",
