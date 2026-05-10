@@ -1,3 +1,5 @@
+import { Abort } from "telefunc";
+import { toTelefuncErrorPayload } from "../../../lib/app-error";
 import { assertAdminAccess } from "../../../modules/auth/service";
 import { sendTestTelegram } from "../../../modules/notify/service";
 
@@ -6,6 +8,10 @@ export async function onSendTestTelegram(input: {
   customContent?: string;
   configId?: number;
 }) {
-  assertAdminAccess();
-  return sendTestTelegram(input);
+  try {
+    assertAdminAccess();
+    return await sendTestTelegram(input);
+  } catch (error) {
+    throw Abort(toTelefuncErrorPayload(error));
+  }
 }

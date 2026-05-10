@@ -34,7 +34,12 @@ export function createTelegramConfigRecord(
     notifyDeliveryFailed: boolean;
   },
 ) {
-  return prisma.telegramConfig.create({ data: input });
+  return prisma.telegramConfig.create({
+    data: {
+      ...input,
+      updatedAt: new Date(),
+    },
+  });
 }
 
 export function updateTelegramConfigRecord(
@@ -54,7 +59,10 @@ export function updateTelegramConfigRecord(
 ) {
   return prisma.telegramConfig.update({
     where: { id },
-    data: input,
+    data: {
+      ...input,
+      updatedAt: new Date(),
+    },
   });
 }
 
@@ -65,13 +73,14 @@ export function deleteTelegramConfigRecord(prisma: PrismaClient, id: number) {
 }
 
 export async function activateTelegramConfigById(prisma: PrismaClient, id: number) {
+  const now = new Date();
   await prisma.telegramConfig.updateMany({
     where: { id: { not: id } },
-    data: { isEnabled: false },
+    data: { isEnabled: false, updatedAt: now },
   });
   return prisma.telegramConfig.update({
     where: { id },
-    data: { isEnabled: true },
+    data: { isEnabled: true, updatedAt: now },
   });
 }
 
@@ -84,7 +93,10 @@ export async function updatePushFlagsForAllConfigs(
   },
 ) {
   await prisma.telegramConfig.updateMany({
-    data: flags,
+    data: {
+      ...flags,
+      updatedAt: new Date(),
+    },
   });
 }
 
@@ -110,11 +122,13 @@ export function upsertTelegramTemplateRecord(
       name: input.name,
       content: input.content,
       isEnabled: input.isEnabled,
+      updatedAt: new Date(),
     },
     update: {
       name: input.name,
       content: input.content,
       isEnabled: input.isEnabled,
+      updatedAt: new Date(),
     },
   });
 }

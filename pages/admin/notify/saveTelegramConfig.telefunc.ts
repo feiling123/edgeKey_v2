@@ -1,3 +1,5 @@
+import { Abort } from "telefunc";
+import { toTelefuncErrorPayload } from "../../../lib/app-error";
 import { assertAdminAccess } from "../../../modules/auth/service";
 import { activateTelegramConfig, clearTelegramLogs, deleteTelegramConfig, saveTelegramConfig, saveTelegramPushSettings } from "../../../modules/notify/service";
 
@@ -15,13 +17,17 @@ type SaveTelegramConfigInput = {
 };
 
 export async function onSaveTelegramConfig(input: SaveTelegramConfigInput) {
-  assertAdminAccess();
-  return saveTelegramConfig(input as any);
+  return runNotifyTelefunc(async () => {
+    assertAdminAccess();
+    return saveTelegramConfig(input as any);
+  });
 }
 
 export async function onDeleteTelegramConfig(id: number) {
-  assertAdminAccess();
-  return deleteTelegramConfig(id);
+  return runNotifyTelefunc(async () => {
+    assertAdminAccess();
+    return deleteTelegramConfig(id);
+  });
 }
 
 export async function onSaveTelegramPushSettings(input: {
@@ -29,16 +35,30 @@ export async function onSaveTelegramPushSettings(input: {
   notifyDeliverySuccess: boolean;
   notifyDeliveryFailed: boolean;
 }) {
-  assertAdminAccess();
-  return saveTelegramPushSettings(input);
+  return runNotifyTelefunc(async () => {
+    assertAdminAccess();
+    return saveTelegramPushSettings(input);
+  });
 }
 
 export async function onActivateTelegramConfig(id: number) {
-  assertAdminAccess();
-  return activateTelegramConfig(id);
+  return runNotifyTelefunc(async () => {
+    assertAdminAccess();
+    return activateTelegramConfig(id);
+  });
 }
 
 export async function onClearTelegramLogs() {
-  assertAdminAccess();
-  return clearTelegramLogs();
+  return runNotifyTelefunc(async () => {
+    assertAdminAccess();
+    return clearTelegramLogs();
+  });
+}
+
+async function runNotifyTelefunc<T>(handler: () => Promise<T>) {
+  try {
+    return await handler();
+  } catch (error) {
+    throw Abort(toTelefuncErrorPayload(error));
+  }
 }

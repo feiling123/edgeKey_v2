@@ -646,6 +646,8 @@ function formatNumber(value: number) {
 }
 
 function getErrorText(error: unknown) {
+  const abortValue = (error as { abortValue?: { message?: unknown } } | null)?.abortValue;
+  if (typeof abortValue?.message === "string" && abortValue.message) return abortValue.message;
   if (error instanceof Error && error.message) return error.message;
   if (typeof error === "string") return error;
   return l("操作失败", "Operation failed");

@@ -1,6 +1,7 @@
 import { getContext } from "telefunc";
 import type { PrismaClient } from "../../generated/prisma/client";
 import { badRequestError, notFoundError, unauthorizedError } from "../../lib/app-error";
+import { logger } from "../../lib/logger";
 import { hashAdminPassword, verifyAdminPassword } from "./crypto";
 
 export function assertAdminAccess() {
@@ -144,13 +145,22 @@ export async function logAdminOperation(input: {
     return;
   }
 
-  await prisma.adminOperationLog.create({
-    data: {
-      adminId,
+  try {
+    await prisma.adminOperationLog.create({
+      data: {
+        adminId,
+        action: input.action,
+        targetType: input.targetType,
+        targetId: input.targetId,
+        detail: input.detail,
+      },
+    });
+  } catch (error) {
+    logger.warn("admin.operation_log.write_failed", {
+      event: "admin.operation_log.write_failed",
       action: input.action,
       targetType: input.targetType,
-      targetId: input.targetId,
-      detail: input.detail,
-    },
-  });
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
 }
