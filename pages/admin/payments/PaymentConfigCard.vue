@@ -4,22 +4,22 @@
       <div class="flex items-center justify-between gap-4 max-md:flex-col max-md:items-start">
         <div>
           <h1 class="text-2xl font-bold">{{ title }}</h1>
-          <p class="text-sm text-base-content/70">配置支付网关参数并控制该支付方式是否在前台展示。</p>
+          <p class="text-sm text-base-content/70">{{ l("配置支付网关参数并控制该支付方式是否在前台展示。", "Configure payment gateway parameters and storefront visibility.") }}</p>
         </div>
         <label class="label cursor-pointer gap-3">
-          <span class="label-text font-medium">启用</span>
+          <span class="label-text font-medium">{{ l("启用", "Enabled") }}</span>
           <input v-model="form.isEnabled" type="checkbox" class="toggle toggle-primary" />
         </label>
       </div>
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">显示名称</span>
+          <span class="label-text font-medium">{{ l("显示名称", "Display Name") }}</span>
           <input v-model="form.name" class="input input-bordered w-full" />
         </label>
                 <label class="flex flex-col gap-1.5">
-                  <span class="label-text font-medium">网关地址(仅需填写主域名，系统处理接口)</span>
-                  <input v-model="form.baseUrl" class="input input-bordered w-full" placeholder="https://pay.example.com (末尾请勿加斜杠)" :disabled="provider === 'STRIPE'" :readonly="provider === 'STRIPE'" />
+                  <span class="label-text font-medium">{{ l("网关地址（仅需填写主域名，系统处理接口）", "Gateway URL (base domain only; API path is handled by the system)") }}</span>
+                  <input v-model="form.baseUrl" class="input input-bordered w-full" :placeholder="l('https://pay.example.com（末尾请勿加斜杠）', 'https://pay.example.com (no trailing slash)')" :disabled="provider === 'STRIPE'" :readonly="provider === 'STRIPE'" />
                 </label>
       </div>
 
@@ -37,8 +37,8 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <AppButton variant="primary" :loading="saving" @click="handleSave">保存配置</AppButton>
-        <span v-if="saved" class="badge badge-success">已保存</span>
+        <AppButton variant="primary" :loading="saving" @click="handleSave">{{ l("保存配置", "Save Configuration") }}</AppButton>
+        <span v-if="saved" class="badge badge-success">{{ l("已保存", "Saved") }}</span>
         <span v-if="errorMessage" class="text-sm text-error">{{ errorMessage }}</span>
       </div>
     </div>
@@ -55,6 +55,7 @@ import EpayForm from "./forms/EpayForm.vue";
 import AlipayForm from "./forms/AlipayForm.vue";
 import StripeForm from "./forms/StripeForm.vue";
 import type { PaymentProvider, PaymentConfigValue } from "../../../modules/payment/types";
+import { useI18n } from "../../../lib/client-i18n";
 
 const formMap = { BEPUSDT: BEpusdtForm, EPAY: EpayForm, ALIPAY: AlipayForm, STRIPE: StripeForm };
 
@@ -65,9 +66,10 @@ const props = defineProps<{
   title: string;
   initialValue: PaymentConfigValue | null;
 }>();
+const { l } = useI18n();
 
 const form = reactive({
-  name: props.initialValue?.name ?? (props.provider === 'BEPUSDT' ? 'BEpusdt' : '聚合支付'),
+  name: props.initialValue?.name ?? (props.provider === 'BEPUSDT' ? 'BEpusdt' : props.provider),
   isEnabled: props.initialValue?.isEnabled ?? false,
   baseUrl: props.initialValue?.baseUrl ?? '',
   notifyUrl: props.initialValue?.notifyUrl ?? '',
@@ -76,7 +78,7 @@ const form = reactive({
 
 const extraFields = reactive(
   props.provider === 'BEPUSDT'
-    ? { appId: props.initialValue?.appId ?? '', appSecret: props.initialValue?.appSecret ?? '' }
+    ? { appId: props.initialValue?.appId ?? '', appSecret: props.initialValue?.appSecret ?? '', merchantId: props.initialValue?.merchantId ?? 'default', paymentType: props.initialValue?.paymentType ?? 'USDT-TRC20' }
     : props.provider === 'ALIPAY'
       ? { alipayAppId: props.initialValue?.alipayAppId ?? '', alipayPrivateKey: props.initialValue?.alipayPrivateKey ?? '', alipayPublicKey: props.initialValue?.alipayPublicKey ?? '' }
       : props.provider === 'STRIPE'
@@ -102,6 +104,8 @@ async function handleSave() {
     if (props.provider === 'BEPUSDT') {
       (extraFields as any).appId = result.appId ?? '';
       (extraFields as any).appSecret = result.appSecret ?? '';
+      (extraFields as any).merchantId = result.merchantId ?? 'default';
+      (extraFields as any).paymentType = result.paymentType ?? 'USDT-TRC20';
     } else if (props.provider === 'STRIPE') {
       (extraFields as any).stripeSecretKey = (result as any).stripeSecretKey ?? '';
       (extraFields as any).stripeWebhookSecret = (result as any).stripeWebhookSecret ?? '';
@@ -117,7 +121,7 @@ async function handleSave() {
     saved.value = true;
     emit('saved', { provider: props.provider, ...form, ...extraFields });
   } catch (error) {
-    errorMessage.value = normalizeTelefuncError(error, '保存失败');
+    errorMessage.value = normalizeTelefuncError(error, l('保存失败', 'Save failed'));
   } finally {
     saving.value = false;
   }

@@ -1,6 +1,6 @@
 <template>
   <ProductForm
-    :title="`编辑商品 #${productId}`"
+    :title="l(`编辑商品 #${productId}`, `Edit Product #${productId}`)"
     :categories="categories"
     :initial-value="
       product
@@ -28,6 +28,8 @@
 import ProductForm from "../../ProductForm.vue";
 import { useData } from "vike-vue/useData";
 import type { Data } from "./+data";
+import { useI18n } from "../../../../../lib/client-i18n";
 
 const { productId, categories, product } = useData<Data>();
+const { l } = useI18n();
 </script>

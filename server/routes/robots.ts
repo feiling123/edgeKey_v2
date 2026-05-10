@@ -1,17 +1,13 @@
 import type { Hono } from "hono";
+import { adminPublicPath } from "../../lib/admin-path";
 
 export function registerRobotsRoutes(app: Hono) {
   app.get("/robots.txt", (c) => {
     const origin = new URL(c.req.url).origin;
+    const adminBase = adminPublicPath(c.env as { ADMIN_PATH?: string } | undefined);
 
     let robotsTxt = `User-agent: *
-Disallow: /admin
-Disallow: /admin/*
 Disallow: /api/
-
-# 禁止爬取管理后台页面
-# 禁止爬取API端点
-
 Sitemap: ${origin}/sitemap.xml
 `;
 

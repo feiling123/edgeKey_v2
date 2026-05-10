@@ -1,7 +1,7 @@
 <template>
   <section class="space-y-6">
     <div class="alert alert-info">
-      <span class="text-white">启用支付前，请先前往"站点设置"配置网站地址，否则无法获取支付结果。</span>
+      <span class="text-white">{{ l("启用支付前，请先前往“站点设置”配置网站地址，否则无法获取支付结果。", "Before enabling payments, configure the site URL in Site Settings or payment results cannot be received.") }}</span>
     </div>
     <div role="tablist" class="tabs tabs-border">
       <a role="tab" class="tab" :class="{ 'tab-active': activeTab === 'BEPUSDT' }" @click="activeTab = 'BEPUSDT'">
@@ -13,7 +13,7 @@
         <span v-if="localConfigs.EPAY?.isEnabled" class="ml-1.5 inline-block w-2 h-2 rounded-full bg-success"></span>
       </a>
       <a role="tab" class="tab" :class="{ 'tab-active': activeTab === 'ALIPAY' }" @click="activeTab = 'ALIPAY'">
-        支付宝
+        {{ l("支付宝", "Alipay") }}
         <span v-if="localConfigs.ALIPAY?.isEnabled" class="ml-1.5 inline-block w-2 h-2 rounded-full bg-success"></span>
       </a>
       <a role="tab" class="tab" :class="{ 'tab-active': activeTab === 'STRIPE' }" @click="activeTab = 'STRIPE'">
@@ -21,10 +21,10 @@
         <span v-if="localConfigs.STRIPE?.isEnabled" class="ml-1.5 inline-block w-2 h-2 rounded-full bg-success"></span>
       </a>
     </div>
-    <PaymentConfigCard v-if="activeTab === 'BEPUSDT'" provider="BEPUSDT" title="Usdt/Usdc(数字货币)" :initial-value="localConfigs.BEPUSDT" @saved="localConfigs.BEPUSDT = $event" />
-    <PaymentConfigCard v-if="activeTab === 'EPAY'" provider="EPAY" title="易支付(聚合支付)" :initial-value="localConfigs.EPAY" @saved="localConfigs.EPAY = $event" />
-    <PaymentConfigCard v-if="activeTab === 'ALIPAY'" provider="ALIPAY" title="支付宝(官方)" :initial-value="localConfigs.ALIPAY" @saved="localConfigs.ALIPAY = $event" />
-    <PaymentConfigCard v-if="activeTab === 'STRIPE'" provider="STRIPE" title="Stripe(信用卡)" :initial-value="localConfigs.STRIPE" @saved="localConfigs.STRIPE = $event" />
+    <PaymentConfigCard v-if="activeTab === 'BEPUSDT'" provider="BEPUSDT" :title="l('USDT/USDC（数字货币）', 'USDT/USDC (Crypto)')" :initial-value="localConfigs.BEPUSDT" @saved="localConfigs.BEPUSDT = $event" />
+    <PaymentConfigCard v-if="activeTab === 'EPAY'" provider="EPAY" :title="l('易支付（聚合支付）', 'Epay (Aggregator)')" :initial-value="localConfigs.EPAY" @saved="localConfigs.EPAY = $event" />
+    <PaymentConfigCard v-if="activeTab === 'ALIPAY'" provider="ALIPAY" :title="l('支付宝（官方）', 'Alipay (Official)')" :initial-value="localConfigs.ALIPAY" @saved="localConfigs.ALIPAY = $event" />
+    <PaymentConfigCard v-if="activeTab === 'STRIPE'" provider="STRIPE" :title="l('Stripe（信用卡）', 'Stripe (Cards)')" :initial-value="localConfigs.STRIPE" @saved="localConfigs.STRIPE = $event" />
   </section>
 </template>
 
@@ -33,8 +33,10 @@ import { ref, reactive } from "vue";
 import { useData } from "vike-vue/useData";
 import PaymentConfigCard from "./PaymentConfigCard.vue";
 import type { Data } from "./+data";
+import { useI18n } from "../../../lib/client-i18n";
 
 const { configs } = useData<Data>();
+const { l } = useI18n();
 const activeTab = ref("BEPUSDT");
 const localConfigs = reactive<Record<string, any>>({ ...configs });
 </script>

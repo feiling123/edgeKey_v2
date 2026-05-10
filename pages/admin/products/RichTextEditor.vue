@@ -2,46 +2,46 @@
   <div ref="rootRef" class="editor-shell overflow-hidden rounded-[22px] border border-base-300 bg-base-100 shadow-sm">
     <div class="editor-toolbar flex flex-wrap items-center gap-3 border-b border-base-300 bg-base-200/50 px-3 py-3">
       <div class="toolbar-group">
-        <button type="button" class="toolbar-button toolbar-button-wide" title="正文" aria-label="正文" @mousedown.prevent @click="editor?.chain().focus().setParagraph().run()">
+        <button type="button" class="toolbar-button toolbar-button-wide" :title="l('正文', 'Paragraph')" :aria-label="l('正文', 'Paragraph')" @mousedown.prevent @click="editor?.chain().focus().setParagraph().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4 5.5a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 5.5Zm0 4a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 9.5Zm0 4a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5A.75.75 0 0 1 4 13.5Z" fill="currentColor"/></svg>
-          <span>正文</span>
+          <span>{{ l("正文", "Text") }}</span>
         </button>
         <button
           type="button"
           class="toolbar-button toolbar-button-wide"
           :class="editor?.isActive('heading', { level: 2 }) ? 'toolbar-button-active' : ''"
-          title="标题"
-          aria-label="标题"
+          :title="l('标题', 'Heading')"
+          :aria-label="l('标题', 'Heading')"
           @mousedown.prevent
           @click="toggleHeading(2)"
         >
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4.75 4a.75.75 0 0 1 .75.75v4.5h9V4.75a.75.75 0 0 1 1.5 0v10.5a.75.75 0 0 1-1.5 0v-4.5h-9v4.5a.75.75 0 0 1-1.5 0V4.75A.75.75 0 0 1 4.75 4Z" fill="currentColor"/></svg>
-          <span>标题</span>
+          <span>{{ l("标题", "Heading") }}</span>
         </button>
         <button
           type="button"
           class="toolbar-button toolbar-button-wide"
           :class="editor?.isActive('heading', { level: 3 }) ? 'toolbar-button-active' : ''"
-          title="小标题"
-          aria-label="小标题"
+          :title="l('小标题', 'Subheading')"
+          :aria-label="l('小标题', 'Subheading')"
           @mousedown.prevent
           @click="toggleHeading(3)"
         >
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4.75 4a.75.75 0 0 1 .75.75v4.5h5V4.75a.75.75 0 0 1 1.5 0v10.5a.75.75 0 0 1-1.5 0v-4.5h-5v4.5a.75.75 0 0 1-1.5 0V4.75A.75.75 0 0 1 4.75 4Zm10 2.5a.75.75 0 0 0 0 1.5h.75v4h-.75a.75.75 0 0 0 0 1.5H17a.75.75 0 0 0 0-1.5h-.75V8H17a.75.75 0 0 0 0-1.5h-2.25Z" fill="currentColor"/></svg>
-          <span>小标题</span>
+          <span>{{ l("小标题", "Subheading") }}</span>
         </button>
       </div>
 
       <div class="toolbar-divider"></div>
 
       <div class="toolbar-group">
-        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('bold') ? 'toolbar-button-active' : ''" title="加粗" aria-label="加粗" @mousedown.prevent @click="editor?.chain().focus().toggleBold().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('bold') ? 'toolbar-button-active' : ''" :title="l('加粗', 'Bold')" :aria-label="l('加粗', 'Bold')" @mousedown.prevent @click="editor?.chain().focus().toggleBold().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M6.25 4A.75.75 0 0 0 5.5 4.75v10.5a.75.75 0 0 0 .75.75h4.375c2.141 0 3.875-1.516 3.875-3.387 0-1.274-.805-2.385-1.996-2.97A3.192 3.192 0 0 0 14 7.125C14 5.399 12.438 4 10.5 4H6.25Zm1.25 4.875V5.5h3c1.152 0 2 .73 2 1.625s-.848 1.75-2 1.75h-3Zm0 1.5h3.125c1.282 0 2.25.93 2.25 2.113 0 1.104-.968 2.012-2.25 2.012H7.5v-4.125Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('italic') ? 'toolbar-button-active' : ''" title="斜体" aria-label="斜体" @mousedown.prevent @click="editor?.chain().focus().toggleItalic().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('italic') ? 'toolbar-button-active' : ''" :title="l('斜体', 'Italic')" :aria-label="l('斜体', 'Italic')" @mousedown.prevent @click="editor?.chain().focus().toggleItalic().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M9 4.75A.75.75 0 0 1 9.75 4h5.5a.75.75 0 0 1 0 1.5h-2.03l-2.44 9h1.97a.75.75 0 0 1 0 1.5h-5.5a.75.75 0 0 1 0-1.5h2.03l2.44-9H9.75A.75.75 0 0 1 9 4.75Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('blockquote') ? 'toolbar-button-active' : ''" title="引用" aria-label="引用" @mousedown.prevent @click="editor?.chain().focus().toggleBlockquote().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('blockquote') ? 'toolbar-button-active' : ''" :title="l('引用', 'Quote')" :aria-label="l('引用', 'Quote')" @mousedown.prevent @click="editor?.chain().focus().toggleBlockquote().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M5.5 7A2.5 2.5 0 0 0 3 9.5V13a2 2 0 0 0 2 2h1.5a2 2 0 0 0 2-2v-2A2 2 0 0 0 6.5 9h-1A1 1 0 0 1 6.5 8h1A.5.5 0 0 0 8 7.5v-1a.5.5 0 0 0-.5-.5h-2Zm8 0A2.5 2.5 0 0 0 11 9.5V13a2 2 0 0 0 2 2h1.5a2 2 0 0 0 2-2v-2A2 2 0 0 0 14.5 9h-1A1 1 0 0 1 14.5 8h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-2Z" fill="currentColor"/></svg>
         </button>
       </div>
@@ -58,7 +58,7 @@
             @click.stop="togglePanel('text')"
           >
             <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M9.169 4.63a.75.75 0 0 1 1.662 0l3.75 9.5a.75.75 0 0 1-1.395.55l-.815-2.065H7.629l-.815 2.065a.75.75 0 1 1-1.395-.55l3.75-9.5ZM8.22 11.115h3.56L10 6.598 8.22 11.115Zm7.03 4.135a.75.75 0 0 1-.75.75H5.5a.75.75 0 0 1 0-1.5h9a.75.75 0 0 1 .75.75Z" fill="currentColor"/></svg>
-            <span>字色</span>
+            <span>{{ l("字色", "Color") }}</span>
           </button>
           <div
             v-if="openPanel === 'text'"
@@ -67,8 +67,8 @@
             @click.stop
           >
             <div class="panel-header">
-              <div class="panel-title">文字颜色</div>
-              <button type="button" class="btn btn-ghost btn-xs" @mousedown.prevent @click="unsetTextColor">清除</button>
+              <div class="panel-title">{{ l("文字颜色", "Text Color") }}</div>
+              <button type="button" class="btn btn-ghost btn-xs" @mousedown.prevent @click="unsetTextColor">{{ l("清除", "Clear") }}</button>
             </div>
             <div class="panel-grid panel-grid-colors">
               <button
@@ -78,7 +78,7 @@
                 class="color-swatch-button"
                 :class="isTextColorSelected(color.value) ? 'color-swatch-active' : ''"
                 :style="{ '--swatch-color': color.value }"
-                title="设置文字颜色"
+                :title="l('设置文字颜色', 'Set text color')"
                 @mousedown.prevent
                 @click="setTextColor(color.value)"
               >
@@ -101,7 +101,7 @@
             @click.stop="togglePanel('highlight')"
           >
             <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M13.82 3.72a1.75 1.75 0 0 1 2.475 0l.0 0 .985.985a1.75 1.75 0 0 1 0 2.475l-7.99 7.99a2.25 2.25 0 0 1-1.02.574l-2.565.641a.75.75 0 0 1-.91-.91l.641-2.565a2.25 2.25 0 0 1 .574-1.02l7.99-7.99Zm1.414 1.06a.25.25 0 0 0-.354 0l-.817.818 1.339 1.338.817-.817a.25.25 0 0 0 0-.353l-.985-.986ZM13.34 6.66l-6.27 6.27a.75.75 0 0 0-.191.34l-.33 1.32 1.32-.33a.75.75 0 0 0 .34-.191l6.27-6.27-1.339-1.338ZM4 16.25a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75a.75.75 0 0 1-.75-.75Z" fill="currentColor"/></svg>
-            <span>高亮</span>
+            <span>{{ l("高亮", "Highlight") }}</span>
           </button>
           <div
             v-if="openPanel === 'highlight'"
@@ -110,8 +110,8 @@
             @click.stop
           >
             <div class="panel-header">
-              <div class="panel-title">高亮颜色</div>
-              <button type="button" class="btn btn-ghost btn-xs" @mousedown.prevent @click="unsetHighlightColor">清除</button>
+              <div class="panel-title">{{ l("高亮颜色", "Highlight Color") }}</div>
+              <button type="button" class="btn btn-ghost btn-xs" @mousedown.prevent @click="unsetHighlightColor">{{ l("清除", "Clear") }}</button>
             </div>
             <div class="panel-grid panel-grid-colors">
               <button
@@ -121,7 +121,7 @@
                 class="color-swatch-button"
                 :class="editor?.isActive('highlight', { color: color.value }) ? 'color-swatch-active' : ''"
                 :style="{ '--swatch-color': color.value }"
-                title="设置高亮颜色"
+                :title="l('设置高亮颜色', 'Set highlight color')"
                 @mousedown.prevent
                 @click="setHighlightColor(color.value)"
               >
@@ -135,10 +135,10 @@
       <div class="toolbar-divider"></div>
 
       <div class="toolbar-group">
-        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('bulletList') ? 'toolbar-button-active' : ''" title="无序列表" aria-label="无序列表" @mousedown.prevent @click="editor?.chain().focus().toggleBulletList().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('bulletList') ? 'toolbar-button-active' : ''" :title="l('无序列表', 'Bullet List')" :aria-label="l('无序列表', 'Bullet List')" @mousedown.prevent @click="editor?.chain().focus().toggleBulletList().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M5 5.5A1.25 1.25 0 1 1 2.5 5.5 1.25 1.25 0 0 1 5 5.5Zm2.25-.75a.75.75 0 0 0 0 1.5h9a.75.75 0 0 0 0-1.5h-9Zm-2.25 4.75A1.25 1.25 0 1 1 2.5 9.5 1.25 1.25 0 0 1 5 9.5Zm2.25-.75a.75.75 0 0 0 0 1.5h9a.75.75 0 0 0 0-1.5h-9ZM3.75 13a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Zm3.5.75a.75.75 0 0 0 0 1.5h9a.75.75 0 0 0 0-1.5h-9Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('orderedList') ? 'toolbar-button-active' : ''" title="有序列表" aria-label="有序列表" @mousedown.prevent @click="editor?.chain().focus().toggleOrderedList().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :class="editor?.isActive('orderedList') ? 'toolbar-button-active' : ''" :title="l('有序列表', 'Ordered List')" :aria-label="l('有序列表', 'Ordered List')" @mousedown.prevent @click="editor?.chain().focus().toggleOrderedList().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M3.78 4.72a.75.75 0 0 1 1.06 0l.44.44.44-.44a.75.75 0 1 1 1.06 1.06l-.44.44.44.44a.75.75 0 1 1-1.06 1.06l-.44-.44-.44.44a.75.75 0 1 1-1.06-1.06l.44-.44-.44-.44a.75.75 0 0 1 0-1.06Zm4.47.03a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5h-8Zm-4.18 4a.75.75 0 0 0-.97 1.15l.77.65-.77.65a.75.75 0 1 0 .97 1.15l1.45-1.22a.75.75 0 0 0 0-1.15l-1.45-1.23Zm4.18.0a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5h-8Zm-4.66 4.06a.75.75 0 0 0 .38 1.4h1.61l-1.82 1.42a.75.75 0 0 0 .46 1.34h2.53a.75.75 0 0 0 0-1.5H5.95l1.82-1.42a.75.75 0 0 0-.46-1.34H4.34a.75.75 0 0 0-.75.75Zm4.66-.06a.75.75 0 0 0 0 1.5h8a.75.75 0 0 0 0-1.5h-8Z" fill="currentColor"/></svg>
         </button>
       </div>
@@ -155,7 +155,7 @@
             @click.stop="toggleLinkPanel"
           >
             <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M11.53 5.47a3.75 3.75 0 0 1 5.303 5.303l-2.121 2.121a3.75 3.75 0 0 1-5.304 0 .75.75 0 1 1 1.06-1.06 2.25 2.25 0 0 0 3.183 0l2.122-2.122a2.25 2.25 0 0 0-3.182-3.182L10.47 8.66a.75.75 0 1 1-1.06-1.06l2.121-2.122Zm-6.243 1.636a3.75 3.75 0 0 1 5.304 0 .75.75 0 1 1-1.061 1.06 2.25 2.25 0 0 0-3.182 0L4.227 10.35a2.25 2.25 0 0 0 3.182 3.182l2.122-2.122a.75.75 0 0 1 1.06 1.061L8.47 14.591a3.75 3.75 0 1 1-5.303-5.303l2.121-2.182Z" fill="currentColor"/></svg>
-            <span>链接</span>
+            <span>{{ l("链接", "Link") }}</span>
           </button>
           <div
             v-if="openPanel === 'link'"
@@ -165,38 +165,45 @@
           >
             <div class="space-y-2.5">
               <div class="panel-header">
-                <div class="panel-title">链接</div>
-                <button type="button" class="btn btn-ghost btn-xs" @mousedown.prevent @click="unsetLink">移除</button>
+                <div class="panel-title">{{ l("链接", "Link") }}</div>
+                <button type="button" class="btn btn-ghost btn-xs" @mousedown.prevent @click="unsetLink">{{ l("移除", "Remove") }}</button>
               </div>
               <input v-model="linkDraft" class="input input-bordered input-sm w-full" placeholder="https://example.com" @mousedown.stop @click.stop />
-              <div class="panel-tip">先选中文本，再应用链接。</div>
+              <div class="panel-tip">{{ l("先选中文本，再应用链接。", "Select text before applying a link.") }}</div>
               <div class="flex justify-end">
-                <button type="button" class="btn btn-sm btn-primary" @mousedown.prevent @click="applyLink">应用链接</button>
+                <button type="button" class="btn btn-sm btn-primary" @mousedown.prevent @click="applyLink">{{ l("应用链接", "Apply Link") }}</button>
               </div>
             </div>
           </div>
         </div>
-        <button type="button" class="toolbar-button toolbar-button-icon" title="移除链接" aria-label="移除链接" @mousedown.prevent @click="unsetLink">
+        <button type="button" class="toolbar-button toolbar-button-icon" :title="l('移除链接', 'Remove Link')" :aria-label="l('移除链接', 'Remove Link')" @mousedown.prevent @click="unsetLink">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4.47 4.47a.75.75 0 0 1 1.06 0l10 10a.75.75 0 1 1-1.06 1.06l-1.778-1.777a3.75 3.75 0 0 1-4.121-.865.75.75 0 0 1 1.06-1.06 2.25 2.25 0 0 0 2.135.594L8.62 9.19a2.25 2.25 0 0 0-1.65 3.842.75.75 0 1 1-1.06 1.06A3.75 3.75 0 0 1 7.56 7.73L4.47 4.53a.75.75 0 0 1 0-1.06Zm7.97.34a3.75 3.75 0 0 1 3.649 6.083.75.75 0 0 1-1.061-1.06 2.25 2.25 0 0 0-2.412-3.676l-.177.051a.75.75 0 0 1-.412-1.442l.413-.118Zm-7.264 2.46a.75.75 0 0 1 1.06 0l.764.764a.75.75 0 1 1-1.06 1.06l-.764-.763a.75.75 0 0 1 0-1.061Z" fill="currentColor"/></svg>
         </button>
         <div class="relative">
-          <button type="button" class="toolbar-button toolbar-button-icon" :class="openPanel === 'image' ? 'toolbar-button-active' : ''" title="插入图片" aria-label="插入图片" @mousedown.prevent @click.stop="toggleImagePanel">
+          <button type="button" class="toolbar-button toolbar-button-icon" :class="openPanel === 'image' ? 'toolbar-button-active' : ''" :title="l('插入图片', 'Insert Image')" :aria-label="l('插入图片', 'Insert Image')" @mousedown.prevent @click.stop="toggleImagePanel">
             <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4.75 4A1.75 1.75 0 0 0 3 5.75v8.5C3 15.216 3.784 16 4.75 16h10.5A1.75 1.75 0 0 0 17 14.25v-8.5A1.75 1.75 0 0 0 15.25 4H4.75Zm0 1.5h10.5a.25.25 0 0 1 .25.25v5.072l-2.117-2.118a1.75 1.75 0 0 0-2.475 0l-2.25 2.25-.617-.617a1.75 1.75 0 0 0-2.475 0L4.5 11.403V5.75a.25.25 0 0 1 .25-.25Zm-.25 7.974 2.126-2.126a.25.25 0 0 1 .354 0l1.147 1.147a.75.75 0 0 0 1.06 0l2.78-2.78a.25.25 0 0 1 .354 0l3.179 3.179v1.356a.25.25 0 0 1-.25.25H4.75a.25.25 0 0 1-.25-.25v-.776ZM13.25 7a1.25 1.25 0 1 0 0 2.5 1.25 1.25 0 0 0 0-2.5Z" fill="currentColor"/></svg>
           </button>
           <div v-if="openPanel === 'image'" class="panel-popover right-0 z-[20] mt-2 w-72 rounded-2xl border border-base-300 bg-base-100 p-3 shadow-xl" @mousedown.prevent @click.stop>
             <div class="space-y-2.5">
               <div class="panel-header">
-                <div class="panel-title">插入图片</div>
+                <div class="panel-title">{{ l("插入图片", "Insert Image") }}</div>
               </div>
+              <input ref="fileInputRef" type="file" accept="image/*" multiple class="hidden" @change="handleImageFiles" />
               <input v-model="imageDraft" class="input input-bordered input-sm w-full" placeholder="https://example.com/image.jpg" @mousedown.stop @click.stop />
-              <div class="panel-tip">输入公开可访问的图片 URL。</div>
-              <div class="flex justify-end">
-                <button type="button" class="btn btn-sm btn-primary" @mousedown.prevent @click="applyImage">插入图片</button>
+              <div class="panel-tip">{{ l("远程图片会先转为 Base64；也可以上传、粘贴或拖入本地图片。", "Remote images are converted to Base64 first. You can also upload, paste, or drop local images.") }}</div>
+              <div v-if="imageMessage" class="text-xs" :class="imageMessageType === 'error' ? 'text-error' : 'text-success'">
+                {{ imageMessage }}
+              </div>
+              <div class="flex justify-between gap-2">
+                <button type="button" class="btn btn-sm btn-outline" :disabled="imageBusy" @mousedown.prevent @click="fileInputRef?.click()">{{ l("上传图片", "Upload") }}</button>
+                <button type="button" class="btn btn-sm btn-primary" :disabled="imageBusy" @mousedown.prevent @click="applyImage">
+                  {{ imageBusy ? l("处理中...", "Processing...") : l("插入图片", "Insert") }}
+                </button>
               </div>
             </div>
           </div>
         </div>
-        <button type="button" class="toolbar-button toolbar-button-icon" title="分割线" aria-label="分割线" @mousedown.prevent @click="editor?.chain().focus().setHorizontalRule().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :title="l('分割线', 'Horizontal Rule')" :aria-label="l('分割线', 'Horizontal Rule')" @mousedown.prevent @click="editor?.chain().focus().setHorizontalRule().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Zm5.47-5.28a.75.75 0 0 1 1.06 0l1.75 1.75a.75.75 0 1 1-1.06 1.06L10.75 7.06v5.88l.47-.47a.75.75 0 0 1 1.06 1.06l-1.75 1.75a.75.75 0 0 1-1.06 0l-1.75-1.75a.75.75 0 1 1 1.06-1.06l.47.47V7.06l-.47.47a.75.75 0 1 1-1.06-1.06l1.75-1.75Z" fill="currentColor"/></svg>
         </button>
       </div>
@@ -204,15 +211,15 @@
       <div class="toolbar-spacer"></div>
 
       <div class="toolbar-group">
-        <button type="button" class="toolbar-button toolbar-button-icon" :disabled="!editor?.can().chain().focus().undo().run()" title="撤销" aria-label="撤销" @mousedown.prevent @click="editor?.chain().focus().undo().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :disabled="!editor?.can().chain().focus().undo().run()" :title="l('撤销', 'Undo')" :aria-label="l('撤销', 'Undo')" @mousedown.prevent @click="editor?.chain().focus().undo().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M8.72 4.72a.75.75 0 0 0-1.06 0L4.41 7.97a.75.75 0 0 0 0 1.06l3.25 3.25a.75.75 0 0 0 1.06-1.06L6.78 9.28H11a4.5 4.5 0 1 1 0 9H7.5a.75.75 0 0 0 0 1.5H11a6 6 0 1 0 0-12H6.78l1.94-1.94a.75.75 0 0 0 0-1.06Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="toolbar-button toolbar-button-icon" :disabled="!editor?.can().chain().focus().redo().run()" title="重做" aria-label="重做" @mousedown.prevent @click="editor?.chain().focus().redo().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :disabled="!editor?.can().chain().focus().redo().run()" :title="l('重做', 'Redo')" :aria-label="l('重做', 'Redo')" @mousedown.prevent @click="editor?.chain().focus().redo().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M11.28 4.72a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 1 1-1.06-1.06l1.94-1.94H9a4.5 4.5 0 0 0 0 9h3.5a.75.75 0 0 1 0 1.5H9a6 6 0 0 1 0-12h4.22l-1.94-1.94a.75.75 0 0 1 0-1.06Z" fill="currentColor"/></svg>
         </button>
-        <button type="button" class="toolbar-button toolbar-button-icon" title="清除格式" aria-label="清除格式" @mousedown.prevent @click="editor?.chain().focus().clearNodes().unsetAllMarks().run()">
+        <button type="button" class="toolbar-button toolbar-button-icon" :title="l('清除格式', 'Clear Formatting')" :aria-label="l('清除格式', 'Clear Formatting')" @mousedown.prevent @click="editor?.chain().focus().clearNodes().unsetAllMarks().run()">
           <svg viewBox="0 0 20 20" class="toolbar-icon" aria-hidden="true"><path d="M4.47 4.47a.75.75 0 0 1 1.06 0L10 8.94l4.47-4.47a.75.75 0 1 1 1.06 1.06L11.06 10l4.47 4.47a.75.75 0 1 1-1.06 1.06L10 11.06l-4.47 4.47a.75.75 0 1 1-1.06-1.06L8.94 10 4.47 5.53a.75.75 0 0 1 0-1.06Z" fill="currentColor"/></svg>
-        </button><button type="button" class="toolbar-button toolbar-button-wide" :class="htmlMode ? 'toolbar-button-active' : ''" title="HTML 源码" @mousedown.prevent @click="toggleHtmlMode">
+        </button><button type="button" class="toolbar-button toolbar-button-wide" :class="htmlMode ? 'toolbar-button-active' : ''" :title="l('HTML 源码', 'HTML Source')" @mousedown.prevent @click="toggleHtmlMode">
           <span>HTML</span>
         </button>
       </div>
@@ -234,6 +241,9 @@ import Placeholder from "@tiptap/extension-placeholder";
 import Image from "@tiptap/extension-image";
 import { TextStyle, Color } from "@tiptap/extension-text-style";
 import Highlight from "@tiptap/extension-highlight";
+import { useI18n } from "../../../lib/client-i18n";
+
+const MAX_IMAGE_BYTES = 1_500_000;
 
 const props = defineProps<{
   modelValue: string;
@@ -265,6 +275,14 @@ const htmlMode = ref(false);
 const htmlDraft = ref("");
 const linkDraft = ref("");
 const imageDraft = ref("");
+const imageBusy = ref(false);
+const imageMessage = ref("");
+const imageMessageType = ref<"success" | "error">("success");
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const failedRemoteImages = new Set<string>();
+const { l } = useI18n();
+let conversionTimer: ReturnType<typeof setTimeout> | null = null;
+let convertingRemoteImages = false;
 
 const editor = useEditor({
   immediatelyRender: false,
@@ -281,7 +299,7 @@ const editor = useEditor({
     }),
     Image.configure({
       inline: false,
-      allowBase64: false,
+      allowBase64: true,
       HTMLAttributes: {
         class: "editor-image",
       },
@@ -294,7 +312,7 @@ const editor = useEditor({
       multicolor: true,
     }),
     Placeholder.configure({
-      placeholder: "请输入商品详情内容",
+      placeholder: l("请输入内容", "Start writing..."),
     }),
   ],
   content: "",
@@ -311,9 +329,31 @@ const editor = useEditor({
 
       return false;
     },
+    handlePaste(_view, event) {
+      const imageFiles = Array.from(event.clipboardData?.files ?? []).filter((file) => file.type.startsWith("image/"));
+      if (!imageFiles.length) {
+        const text = event.clipboardData?.getData("text/plain")?.trim();
+        if (text && isRemoteImageUrl(text)) {
+          void insertImageFromRemoteUrl(text);
+          return true;
+        }
+        return false;
+      }
+
+      void insertImageFiles(imageFiles);
+      return true;
+    },
+    handleDrop(_view, event) {
+      const imageFiles = Array.from(event.dataTransfer?.files ?? []).filter((file) => file.type.startsWith("image/"));
+      if (!imageFiles.length) return false;
+      event.preventDefault();
+      void insertImageFiles(imageFiles);
+      return true;
+    },
   },
   onUpdate({ editor: currentEditor }) {
     emit("update:modelValue", currentEditor.getHTML());
+    scheduleRemoteImageConversion();
   },
 });
 
@@ -335,22 +375,26 @@ watch(
     }
 
     instance.commands.setContent(nextValue || "", false);
+    scheduleRemoteImageConversion();
   },
   { immediate: true },
 );
 
-function toggleHtmlMode() {
+async function toggleHtmlMode() {
   if (!htmlMode.value) {
     htmlDraft.value = editor.value?.getHTML() ?? "";
   } else {
-    editor.value?.commands.setContent(htmlDraft.value, false);
-    emit("update:modelValue", htmlDraft.value);
+    const html = await convertRemoteImagesInHtml(htmlDraft.value);
+    htmlDraft.value = html;
+    editor.value?.commands.setContent(html, false);
+    emit("update:modelValue", html);
   }
   htmlMode.value = !htmlMode.value;
 }
 
 function onHtmlInput() {
   emit("update:modelValue", htmlDraft.value);
+  scheduleRemoteImageConversion();
 }
 
 function toggleHeading(level: 2 | 3) {
@@ -408,7 +452,7 @@ function unsetLink() {
   openPanel.value = null;
 }
 
-function applyImage() {
+async function applyImage() {
   if (!editor.value) {
     return;
   }
@@ -418,9 +462,7 @@ function applyImage() {
     return;
   }
 
-  editor.value.chain().focus().setImage({ src }).run();
-  imageDraft.value = "";
-  openPanel.value = null;
+  await insertImageFromRemoteUrl(src);
 }
 
 function togglePanel(panel: "text" | "highlight") {
@@ -434,6 +476,7 @@ function toggleLinkPanel() {
 
 function toggleImagePanel() {
   openPanel.value = openPanel.value === "image" ? null : "image";
+  imageMessage.value = "";
 }
 
 function handleDocumentPointerDown(event: PointerEvent) {
@@ -466,6 +509,163 @@ function normalizeColor(value?: string | null) {
   return `#${[r, g, b]
     .map((component) => Number(component).toString(16).padStart(2, "0"))
     .join("")}`;
+}
+
+async function handleImageFiles(event: Event) {
+  const input = event.target as HTMLInputElement;
+  await insertImageFiles(Array.from(input.files ?? []));
+  input.value = "";
+}
+
+async function insertImageFiles(files: File[]) {
+  const images = files.filter((file) => file.type.startsWith("image/"));
+  if (!images.length) return;
+
+  imageBusy.value = true;
+  clearImageMessage();
+
+  try {
+    for (const file of images) {
+      assertImageSize(file.size);
+      insertImageDataUrl(await fileToDataUrl(file));
+    }
+    imageDraft.value = "";
+    openPanel.value = null;
+    setImageMessage(l(`已插入 ${images.length} 张图片。`, `${images.length} image(s) inserted.`), "success");
+  } catch (error) {
+    setImageMessage(error instanceof Error ? error.message : l("图片处理失败", "Image processing failed"), "error");
+  } finally {
+    imageBusy.value = false;
+  }
+}
+
+async function insertImageFromRemoteUrl(url: string) {
+  if (!editor.value) return;
+  clearImageMessage();
+
+  if (!isRemoteImageUrl(url)) {
+    insertImageDataUrl(url);
+    imageDraft.value = "";
+    openPanel.value = null;
+    return;
+  }
+
+  imageBusy.value = true;
+  try {
+    insertImageDataUrl(await remoteImageToDataUrl(url));
+    imageDraft.value = "";
+    openPanel.value = null;
+    setImageMessage(l("远程图片已转为 Base64。", "Remote image converted to Base64."), "success");
+  } catch (error) {
+    setImageMessage(error instanceof Error ? error.message : l("远程图片转换失败", "Remote image conversion failed"), "error");
+  } finally {
+    imageBusy.value = false;
+  }
+}
+
+function insertImageDataUrl(src: string) {
+  editor.value?.chain().focus().setImage({ src }).run();
+}
+
+function scheduleRemoteImageConversion() {
+  if (typeof window === "undefined" || convertingRemoteImages) return;
+  if (conversionTimer) clearTimeout(conversionTimer);
+  conversionTimer = setTimeout(() => {
+    conversionTimer = null;
+    void convertEditorRemoteImages();
+  }, 650);
+}
+
+async function convertEditorRemoteImages() {
+  if (convertingRemoteImages) return;
+  convertingRemoteImages = true;
+
+  try {
+    if (htmlMode.value) {
+      const nextHtml = await convertRemoteImagesInHtml(htmlDraft.value);
+      if (nextHtml !== htmlDraft.value) {
+        htmlDraft.value = nextHtml;
+        emit("update:modelValue", nextHtml);
+      }
+      return;
+    }
+
+    const instance = editor.value;
+    if (!instance) return;
+    const currentHtml = instance.getHTML();
+    const nextHtml = await convertRemoteImagesInHtml(currentHtml);
+    if (nextHtml !== currentHtml) {
+      instance.commands.setContent(nextHtml, false);
+      emit("update:modelValue", nextHtml);
+    }
+  } finally {
+    convertingRemoteImages = false;
+  }
+}
+
+async function convertRemoteImagesInHtml(html: string) {
+  if (typeof window === "undefined" || !html || !html.includes("<img")) return html;
+
+  const doc = new DOMParser().parseFromString(`<div>${html}</div>`, "text/html");
+  const root = doc.body.firstElementChild;
+  if (!root) return html;
+
+  let changed = false;
+  const images = Array.from(root.querySelectorAll("img"));
+  for (const image of images) {
+    const src = image.getAttribute("src")?.trim();
+    if (!src || !isRemoteImageUrl(src) || failedRemoteImages.has(src)) continue;
+    try {
+      image.setAttribute("src", await remoteImageToDataUrl(src));
+      changed = true;
+    } catch (error) {
+      failedRemoteImages.add(src);
+      setImageMessage(error instanceof Error ? error.message : l("远程图片转换失败", "Remote image conversion failed"), "error");
+    }
+  }
+
+  return changed ? root.innerHTML : html;
+}
+
+async function remoteImageToDataUrl(url: string) {
+  const response = await fetch(url, { mode: "cors", credentials: "omit" });
+  if (!response.ok) {
+    throw new Error(l(`远程图片读取失败：HTTP ${response.status}`, `Remote image request failed: HTTP ${response.status}`));
+  }
+  const blob = await response.blob();
+  if (!blob.type.startsWith("image/")) {
+    throw new Error(l("远程地址不是图片文件。", "The remote URL is not an image."));
+  }
+  assertImageSize(blob.size);
+  return fileToDataUrl(blob);
+}
+
+function fileToDataUrl(file: Blob) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error(l("图片读取失败。", "Failed to read image.")));
+    reader.readAsDataURL(file);
+  });
+}
+
+function assertImageSize(size: number) {
+  if (size > MAX_IMAGE_BYTES) {
+    throw new Error(l("图片超过 1.5MB，请压缩后再上传。", "Image exceeds 1.5MB. Compress it before uploading."));
+  }
+}
+
+function isRemoteImageUrl(value: string) {
+  return /^https?:\/\//i.test(value);
+}
+
+function clearImageMessage() {
+  imageMessage.value = "";
+}
+
+function setImageMessage(message: string, type: "success" | "error") {
+  imageMessage.value = message;
+  imageMessageType.value = type;
 }
 
 onMounted(() => {
@@ -639,7 +839,7 @@ onBeforeUnmount(() => {
 
 :deep(.tiptap-editor .ProseMirror p.is-editor-empty:first-child::before) {
   color: color-mix(in srgb, currentColor 40%, transparent);
-  content: "请输入商品详情内容";
+  content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;

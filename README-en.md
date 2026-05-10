@@ -13,12 +13,12 @@ EdgeKey is a full-stack card key shop system built with the Vike framework, depl
 - 🔑 **Card Key Management** — Bulk import card keys, automatic delivery after payment, real-time inventory alerts.
 - 📦 **Order Management** — Order list, manual redelivery, auto-close expired orders, and detailed payment logs.
 - 💳 **Multiple Payment Gateways** — Built-in BEpusdt (USDT) and Epay (aggregated payments), with plugin-style extensibility for more.
-- 📧 **Email Notifications** — Supports SMTP / API / Cloudflare Email, with detailed email send logs.
+- 🔔 **Telegram Notifications** — Supports Telegram Bot API, with payment success, delivery success, delivery failure alerts, and send logs.
 - ⚙️ **Site Settings** — Flexible configuration for site name, logo, announcements, and support contact.
 - 🔐 **Admin Panel** — Secure administrator account system.
 
 > [!TIP]
-> **About zero-cost operation:** When combined with a payment channel (USDT, self-hosted, etc.), personal SMTP, and a free image hosting service, this project can achieve **100% zero-cost** operation.
+> **About zero-cost operation:** When combined with a payment channel (USDT, self-hosted, etc.), Telegram Bot notifications, and a free image hosting service, this project can achieve **100% zero-cost** operation.
 
 ## Screenshots
 
@@ -47,7 +47,7 @@ Three deployment methods are supported, ordered by recommendation:
 > 2. For security, change the default secret (`AUTH_SECRET`) in the wizard.
 > 3. If you don't bind an existing D1 database, it will automatically create and initialize one (including admin account), no manual steps needed.
 > 4. After deployment, find a log entry like `Deployed edgekey triggers (0.38 sec) https://edgekey.youraccount.workers.dev` — that URL is your site.
-> 5. `https://edgekey.youraccount.workers.dev/admin` is the admin login page. Default credentials: `admin` / `admin123456`. **Change your password immediately after first login!**
+> 5. The admin route is controlled by the `ADMIN_PATH` variable. The default is `admin`, so the initial login URL is `https://edgekey.youraccount.workers.dev/admin`. For production, change it to a random path in Cloudflare Variables. Default credentials: `admin` / `admin123456`. **Change your password immediately after first login!**
 
 ### Git-Connected Cloudflare Auto Deploy
 
@@ -65,8 +65,8 @@ Table schema and seed data are initialized automatically by the `deploy` script 
 
 Since `wrangler.jsonc` requires your actual D1 `database_id`, set the build command in Cloudflare's "Build Configuration" to:
 
-```D:\code\edgeKey\README-en.md#L1-1
-sed -i 's/"database_name": "edgekey-db"/"database_name": "edgekey-db", "database_id": "YOUR_DATABASE_ID"/' wrangler.jsonc && bun run deploy
+```bash
+sed -i 's/"database_name": "edgekey-db"/"database_name": "edgekey-db", "database_id": "YOUR_DATABASE_ID"/' wrangler.jsonc && npm run deploy
 ```
 
 Replace `YOUR_DATABASE_ID` with your actual D1 database ID (found in Cloudflare Dashboard → D1 → database detail page).
@@ -84,16 +84,16 @@ Before deploying to Cloudflare for the first time, create and initialize the D1 
 
 **1. Login and create the database**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bunx wrangler login
-bunx wrangler d1 create edgekey-db
+```bash
+npx wrangler login
+npx wrangler d1 create edgekey-db
 ```
 
 **2. Bind the Database ID**
 
 Copy the `database_id` from the terminal output into `wrangler.jsonc`:
 
-```D:\code\edgeKey\README-en.md#L1-1
+```jsonc
 "d1_databases": [
   {
     "binding": "DB",
@@ -106,39 +106,39 @@ Copy the `database_id` from the terminal output into `wrangler.jsonc`:
 
 **3. Initialize remote table schema**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun run db:migrations:remote
+```bash
+npm run db:migrations:remote
 ```
 
 **4. Seed admin account and initial data**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun run db:seed:remote
+```bash
+npm run db:seed:remote
 ```
 
 **5. Configure AUTH_SECRET**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bunx wrangler secret put AUTH_SECRET
+```bash
+npx wrangler secret put AUTH_SECRET
 ```
 
 **6. Generate Prisma Client and deploy**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun run db:generate
-bun run up
+```bash
+npm run db:generate
+npm run up
 ```
 
-`bun run up` is equivalent to build + publish:
+`npm run up` is equivalent to build + publish:
 - `vike build`
 - `wrangler deploy`
 
 ## Security Notes (Important)
 
 The project uses admin username/password login. Before using in production:
-- `AUTH_SECRET` **must** be configured in the Cloudflare production environment. Without it, an exception is thrown and admin login is blocked.
-- See the deployment sections above for configuration instructions.
-- Production command: `wrangler secret put AUTH_SECRET`
+- The system uses `AUTH_SECRET` or `NEXTAUTH_SECRET` from Cloudflare variables/secrets when configured.
+- If no auth secret is configured, the app generates a per-install login secret in the D1 `RuntimeSecret` table. It does not use a fixed public default secret.
+- For production, configuring `AUTH_SECRET` manually is still recommended. Command: `wrangler secret put AUTH_SECRET`
 - Default admin credentials: `admin / admin123456` — **change your password immediately after first login.**
 
 ### Forgot Your Password?
@@ -157,37 +157,37 @@ UPDATE Admin SET passwordHash = '$2b$10$viMe8RgcpM30gmmF9OpOcuA/QgleSIUk5VRtqjOu
 
 ## Local Development
 
-Bun is recommended (npm/pnpm/yarn also work).
+npm is recommended. pnpm/yarn can also be used.
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun install
+```bash
+npm install
 ```
 
 Since this project uses Cloudflare D1, you must initialize the local D1 simulator schema before starting the dev server for the first time:
 
-```D:\code\edgeKey\README-en.md#L1-1
+```bash
 # 1. Generate Prisma Client (required after first install)
-bun run db:generate
+npm run db:generate
 
 # 2. Apply all migrations to the local Wrangler simulator
-bun run db:migrations:local
+npm run db:migrations:local
 
 # 3. Seed admin account and initial data
-bun run db:seed
+npm run db:seed
 
 # 4. Prepare .env file
 # Fill in required env vars (e.g. AUTH_SECRET) in env.example, then copy to env.
 
 # 5. Start dev server
-bun run dev
+npm run dev
 ```
 
 ### Cloudflare D1 + Prisma Local Dev Workflow
 
 This project follows the official [Prisma + Cloudflare D1 guide](https://www.prisma.io/docs/guides/deployment/cloudflare-d1) best practices.
 
-- `bun dev` runs in a Cloudflare-style local environment; Prisma connects to the **local D1 simulator** via `env.DB`.
-- After `bun run up`, Prisma connects to **remote D1** via the same `env.DB` binding.
+- `npm run dev` runs in a Cloudflare-style local environment; Prisma connects to the **local D1 simulator** via `env.DB`.
+- After `npm run up`, Prisma connects to **remote D1** via the same `env.DB` binding.
 - `DATABASE_URL` in `.env` is only used by the Prisma CLI, not at runtime.
 - The current `prisma/schema.prisma` only retains the Cloudflare client generator; runtime uses `generated/prisma/client`.
 
@@ -197,8 +197,8 @@ When modifying the database schema, follow this process strictly:
 
 **Step 1: Modify schema and generate SQL migration**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bunx prisma migrate diff \
+```bash
+npx prisma migrate diff \
   --from-migrations prisma/migrations \
   --to-schema prisma/schema.prisma \
   --script > prisma/migrations/0002_xxx.sql
@@ -209,29 +209,29 @@ bunx prisma migrate diff \
 
 **Step 2: Sync to local D1 simulator**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun run db:migrations:local
+```bash
+npm run db:migrations:local
 ```
 
 **Step 3: Sync to Cloudflare remote (before publishing)**
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun run db:migrations:remote
+```bash
+npm run db:migrations:remote
 ```
 
 ### Daily Dev Command
 
-```D:\code\edgeKey\README-en.md#L1-1
-bun dev
+```bash
+npm run dev
 ```
 
 ### Telefunc Notes
 
 - Telefunc functions are placed in the corresponding page directory, ending with `.telefunc.ts`.
-- On Windows + `bun dev` + `workerd`, Telefunc's dev-mode naming/co-location check triggers a path compatibility issue, so it is disabled in `server/telefunc-handler.ts`. This does not affect actual Telefunc loading or invocation.
+- On Windows + `npm run dev` + `workerd`, Telefunc's dev-mode naming/co-location check triggers a path compatibility issue, so it is disabled in `server/telefunc-handler.ts`. This does not affect actual Telefunc loading or invocation.
 
 **⚠️ Never do the following:**
-1. Do **not** assume `bun dev` uses `prisma/db.sqlite` — it uses the local D1 simulator.
+1. Do **not** assume `npm run dev` uses `prisma/db.sqlite` — it uses the local D1 simulator.
 2. Do **not** use `prisma migrate dev` — it deviates from the D1 migration workflow.
 3. Do **not** overwrite `prisma/migrations/0001_init.sql` — keep init and incremental migrations separate.
 
@@ -245,7 +245,7 @@ bun dev
 
 ## Project Structure
 
-```D:\code\edgeKey\README-en.md#L1-1
+```text
 .
 ├─ assets/                 # Static assets
 ├─ components/             # Reusable components (non-route pages)
@@ -291,15 +291,15 @@ Common `+` files:
 
 ## Log Troubleshooting
 
-When email or payment callback issues occur, check Workers logs in Cloudflare Dashboard:
+When Telegram notification or payment callback issues occur, check Workers logs in Cloudflare Dashboard:
 
 1. Go to [dash.cloudflare.com](https://dash.cloudflare.com)
 2. Left menu → **Workers & Pages** → click **edgekey**
 3. Top tab → **Observability**
 4. Filter logs by keyword, e.g.:
-   - `email.notify_order_paid.config_failed` — email config fetch failed after payment
-   - `email.send.failed` — email send failed
-   - `email.order_paid.failed` — email notification failed after successful payment
+   - `telegram.notify_order_paid.config_failed` — Telegram config fetch failed after payment
+   - `telegram.send.failed` — Telegram send failed
+   - `telegram.order_paid.failed` — Telegram notification failed after successful payment
    - `payment.notify.route_exception` — payment callback routing exception
    - `payment.notify.context_missing` — payment callback missing DB context
    - `payment.notify.diagnostic` — payment callback validation exception (signature error, amount mismatch, etc.)
@@ -311,7 +311,6 @@ Thanks to the [Linux.do](https://linux.do/) and [NodeSeek](https://www.nodeseek.
 
 Thanks to the following open source projects:
 - [BEpusdt](https://github.com/v03413/BEpusdt) — Cryptocurrency transaction support
-- [worker-mailer](https://github.com/zou-yu/worker-mailer) — SMTP email support in Workers environment
 
 
 ## 🏝️ Get Involved

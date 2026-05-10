@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!product" class="alert alert-warning">商品不存在或未上架。</div>
+  <div v-if="!product" class="alert alert-warning">{{ t("product.missing") }}</div>
   <div v-else class="grid gap-6 lg:grid-cols-[2fr_1fr]">
     <section class="card bg-base-100 shadow-sm overflow-hidden">
       <figure class="w-full bg-base-200">
@@ -7,13 +7,13 @@
       </figure>
       <div class="card-body space-y-4">
         <div>
-          <p class="text-sm uppercase tracking-[0.2em] text-primary">Product</p>
+          <p class="text-sm uppercase tracking-[0.2em] text-primary">{{ t("product.label") }}</p>
           <h1 class="text-3xl font-bold">{{ product.name }}</h1>
           <p class="mt-2 text-base-content/70">{{ product.subtitle }}</p>
         </div>
         <div class="prose max-w-none text-base-content/80" v-html="descriptionHtml"></div>
         <div class="rounded-box bg-base-200 p-4 text-sm text-base-content/80">
-          {{ product.purchaseNote || '下单后将生成待支付订单，支付成功后会给您的联系邮箱发送通知，请注意查看。' }}
+          {{ product.purchaseNote || t("product.default_purchase_note") }}
         </div>
       </div>
     </section>
@@ -22,31 +22,31 @@
       <div class="lg:sticky lg:top-24 card bg-base-100 shadow-sm">
         <div class="card-body space-y-4">
           <div>
-            <div class="text-sm text-base-content/60">当前价格</div>
+            <div class="text-sm text-base-content/60">{{ t("product.price") }}</div>
             <div class="text-3xl font-bold text-primary">{{ formatCents(product.price) }}</div>
           </div>
-          <div class="text-sm text-base-content/70">限购 {{ product.minBuy }} - {{ product.maxBuy }} 件</div>
+          <div class="text-sm text-base-content/70">{{ t("product.limit", { min: product.minBuy, max: product.maxBuy }) }}</div>
 
           <div class="divider my-0"></div>
 
           <label class="flex flex-col gap-1.5">
-            <span class="label-text font-medium">联系邮箱</span>
-            <input v-model="form.contactValue" type="email" class="input input-bordered w-full" placeholder="name@example.com" />
+            <span class="label-text font-medium">{{ t("product.email") }}</span>
+            <input v-model="form.contactValue" type="email" class="input input-bordered w-full" :placeholder="t('product.email_placeholder')" />
           </label>
-          <p class="-mt-2 text-xs text-base-content/60">必填，自动发货和售后联系都会发送到这个邮箱。</p>
+          <p class="-mt-2 text-xs text-base-content/60">{{ t("product.email_tip") }}</p>
 
           <label class="flex flex-col gap-1.5">
-            <span class="label-text font-medium">购买数量</span>
+            <span class="label-text font-medium">{{ t("product.quantity") }}</span>
             <input v-model.number="form.quantity" type="number" :min="product.minBuy" :max="product.maxBuy" class="input input-bordered w-full" />
           </label>
 
           <label class="flex flex-col gap-1.5">
-            <span class="label-text font-medium">备注</span>
-            <textarea v-model="form.buyerNote" class="textarea textarea-bordered w-full" rows="3" placeholder="可以留下QQ号、微信等联系方式"></textarea>
+            <span class="label-text font-medium">{{ t("product.note") }}</span>
+            <textarea v-model="form.buyerNote" class="textarea textarea-bordered w-full" rows="3" :placeholder="t('product.note_placeholder')"></textarea>
           </label>
 
           <div class="space-y-2">
-            <div class="text-sm font-medium">支付方式</div>
+            <div class="text-sm font-medium">{{ t("product.payment_method") }}</div>
             <div class="grid gap-3">
               <label v-for="method in paymentMethods" :key="method.provider" class="rounded-box border border-base-300 p-4">
                 <div class="flex items-center justify-between gap-3">
@@ -58,11 +58,11 @@
           </div>
 
           <div v-if="form.paymentProvider === 'EPAY'" class="space-y-2">
-            <div class="text-sm font-medium">易支付渠道</div>
+            <div class="text-sm font-medium">{{ t("product.epay_channel") }}</div>
             <div class="grid gap-3 md:grid-cols-2">
               <label v-for="channel in epayChannels" :key="channel.value" class="rounded-box border border-base-300 p-4">
                 <div class="flex items-center justify-between gap-3">
-                  <span>{{ channel.label }}</span>
+                  <span>{{ channel.label() }}</span>
                   <input v-model="form.paymentChannel" type="radio" class="radio radio-primary radio-sm" :value="channel.value" />
                 </div>
               </label>
@@ -71,8 +71,8 @@
 
 
 
-          <AppButton variant="primary" :loading="submitting" :disabled="!paymentMethods.length" @click="handleCreateOrder">提交订单</AppButton>
-          <p v-if="!paymentMethods.length" class="text-sm text-warning">当前没有可用支付方式，请联系管理员启用支付配置。</p>
+          <AppButton variant="primary" :loading="submitting" :disabled="!paymentMethods.length" @click="handleCreateOrder">{{ t("product.submit") }}</AppButton>
+          <p v-if="!paymentMethods.length" class="text-sm text-warning">{{ t("product.no_payment") }}</p>
           <p v-if="errorMessage" class="text-sm text-error">{{ errorMessage }}</p>
         </div>
       </div>
@@ -83,7 +83,7 @@
 <script setup lang="ts">
 import AppButton from "../../../components/AppButton.vue";
 import { normalizeTelefuncError } from "../../../lib/app-error";
-import { reactive, ref } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useData } from "vike-vue/useData";
 import { isEmail } from "../../../lib/validators/email";
 import { formatCents } from "../../../lib/utils/money";
@@ -92,16 +92,18 @@ import type { PaymentProvider } from "../../../modules/payment/types";
 import { isMobile } from "../../../lib/utils/device";
 import { onMounted, watch } from "vue";
 import { saveLocalOrder } from "../../../lib/local-orders";
+import { useI18n } from "../../../lib/client-i18n";
 import type { Data } from "./+data";
 
 import emptyCoverUrl from "../../../assets/empty.jpg";
 
 const { product, paymentMethods } = useData<Data>();
+const { l, t } = useI18n();
 const submitting = ref(false);
 const errorMessage = ref("");
 const epayChannels = [
-  { value: "alipay", label: "支付宝" },
-  { value: "wxpay", label: "微信支付" },
+  { value: "alipay", label: () => l("支付宝", "Alipay") },
+  { value: "wxpay", label: () => l("微信支付", "WeChat Pay") },
 ] as const;
 
 
@@ -126,19 +128,19 @@ watch(() => form.paymentProvider, (provider) => {
   else form.paymentChannel = "";
 });
 
-const descriptionHtml = formatDescriptionHtml(product?.description || "");
+const descriptionHtml = computed(() => formatDescriptionHtml(product?.description || ""));
 
 async function handleCreateOrder() {
   if (!product) return;
 
   const contactEmail = form.contactValue.trim();
   if (!contactEmail) {
-    errorMessage.value = "联系邮箱不能为空";
+    errorMessage.value = t("product.email_required");
     return;
   }
 
   if (!isEmail(contactEmail)) {
-    errorMessage.value = "联系邮箱格式不正确";
+    errorMessage.value = t("product.email_invalid");
     return;
   }
 
@@ -172,7 +174,7 @@ async function handleCreateOrder() {
 
     window.location.href = `/order/${result.orderNo}?token=${encodeURIComponent(result.queryToken)}`;
   } catch (error) {
-    errorMessage.value = normalizeTelefuncError(error, "下单失败");
+    errorMessage.value = normalizeTelefuncError(error, t("product.create_failed"));
   } finally {
     submitting.value = false;
   }
@@ -181,7 +183,7 @@ async function handleCreateOrder() {
 function formatDescriptionHtml(value: string) {
   const trimmed = value.trim();
   if (!trimmed) {
-    return "<p>暂无商品描述。</p>";
+    return `<p>${t("product.empty_description")}</p>`;
   }
 
   if (/<[a-z][\s\S]*>/i.test(trimmed)) {

@@ -2,33 +2,33 @@
   <section class="card bg-base-100 shadow-sm">
     <div class="card-body space-y-4">
       <div>
-        <h1 class="text-2xl font-bold">分类管理</h1>
-        <p class="text-sm text-base-content/70">管理前台商品分类、排序和启用状态。</p>
+        <h1 class="text-2xl font-bold">{{ l("分类管理", "Category Management") }}</h1>
+        <p class="text-sm text-base-content/70">{{ l("管理前台商品分类、排序和启用状态。", "Manage storefront product categories, sort order, and status.") }}</p>
       </div>
 
       <div class="grid gap-6 lg:grid-cols-[1.2fr_2fr]">
         <section class="rounded-box border border-base-300 p-4">
-          <h2 class="mb-3 text-lg font-semibold">{{ form.id ? `编辑 #${form.id}` : "新增分类" }}</h2>
+          <h2 class="mb-3 text-lg font-semibold">{{ form.id ? l(`编辑 #${form.id}`, `Edit #${form.id}`) : l("新增分类", "New Category") }}</h2>
           <div class="space-y-3">
             <label class="flex flex-col gap-1.5">
-              <span class="label-text font-medium">名称</span>
+              <span class="label-text font-medium">{{ l("名称", "Name") }}</span>
               <input v-model="form.name" class="input input-bordered w-full" />
             </label>
             <label class="flex flex-col gap-1.5">
               <span class="label-text font-medium">Slug</span>
-              <input v-model="form.slug" class="input input-bordered w-full" placeholder="留空则自动生成" />
+              <input v-model="form.slug" class="input input-bordered w-full" :placeholder="l('留空则自动生成', 'Leave empty to generate automatically')" />
             </label>
             <label class="flex flex-col gap-1.5">
-              <span class="label-text font-medium">描述</span>
+              <span class="label-text font-medium">{{ l("描述", "Description") }}</span>
               <textarea v-model="form.description" class="textarea textarea-bordered w-full" rows="3"></textarea>
             </label>
             <label class="flex flex-col gap-1.5">
-              <span class="label-text font-medium">排序</span>
+              <span class="label-text font-medium">{{ l("排序", "Sort") }}</span>
               <input v-model.number="form.sort" type="number" class="input input-bordered w-full" />
             </label>
             <div class="flex items-center gap-3">
-              <AppButton variant="primary" size="sm" :loading="saving" @click="handleSave">保存分类</AppButton>
-              <AppButton variant="ghost" size="sm" @click="resetForm">重置</AppButton>
+              <AppButton variant="primary" size="sm" :loading="saving" @click="handleSave">{{ l("保存分类", "Save Category") }}</AppButton>
+              <AppButton variant="ghost" size="sm" @click="resetForm">{{ l("重置", "Reset") }}</AppButton>
             </div>
             <p v-if="errorMessage" class="text-sm text-error">{{ errorMessage }}</p>
           </div>
@@ -41,7 +41,7 @@
             :total="categoryList.length"
             :page="1"
             :page-size="categoryList.length || 1"
-            empty-text="当前还没有分类，先创建第一条。"
+            :empty-text="l('当前还没有分类，先创建第一条。', 'No categories yet. Create the first one.')"
           >
             <template #name="{ row }">
               <div class="font-medium">{{ row.name }}</div>
@@ -49,14 +49,14 @@
             </template>
             <template #status="{ row }">
               <StatusTag :type="row.status === 'ACTIVE' ? 'success' : 'default'">
-                {{ row.status === 'ACTIVE' ? '启用' : '停用' }}
+                {{ row.status === 'ACTIVE' ? l('启用', 'Active') : l('停用', 'Inactive') }}
               </StatusTag>
             </template>
             <template #actions="{ row }">
               <div class="flex gap-2">
-                <AppButton size="xs" variant="outline" @click="startEdit(row)">编辑</AppButton>
-                <AppButton size="xs" variant="outline" @click="handleToggle(row)">{{ row.status === 'ACTIVE' ? '停用' : '启用' }}</AppButton>
-                <AppButton size="xs" variant="danger" @click="handleDelete(row)">删除</AppButton>
+                <AppButton size="xs" variant="outline" @click="startEdit(row)">{{ l("编辑", "Edit") }}</AppButton>
+                <AppButton size="xs" variant="outline" @click="handleToggle(row)">{{ row.status === 'ACTIVE' ? l('停用', 'Disable') : l('启用', 'Enable') }}</AppButton>
+                <AppButton size="xs" variant="danger" @click="handleDelete(row)">{{ l("删除", "Delete") }}</AppButton>
               </div>
             </template>
           </DataTable>
@@ -69,27 +69,29 @@
 
 <script setup lang="ts">
 import { normalizeTelefuncError } from "../../../lib/app-error";
-import { reactive, ref, useTemplateRef } from "vue";
+import { computed, reactive, ref, useTemplateRef } from "vue";
 import ConfirmDialog from "../../../components/ConfirmDialog.vue";
 import AppButton from "../../../components/AppButton.vue";
 import DataTable from "../../../components/DataTable.vue";
 import { useData } from "vike-vue/useData";
 import StatusTag from "../../../components/StatusTag.vue";
+import { useI18n } from "../../../lib/client-i18n";
 import { onDeleteCategory } from "./deleteCategory.telefunc";
 import { onSaveCategory } from "./saveCategory.telefunc";
 import { onToggleCategory } from "./toggleCategory.telefunc";
 import type { Data } from "./+data";
 
 const { categories } = useData<Data>();
+const { l } = useI18n();
 
-const columns = [
+const columns = computed(() => [
   { key: "id", label: "ID" },
-  { key: "name", label: "名称" },
+  { key: "name", label: l("名称", "Name") },
   { key: "slug", label: "Slug" },
-  { key: "sort", label: "排序" },
-  { key: "status", label: "状态" },
-  { key: "actions", label: "操作" },
-];
+  { key: "sort", label: l("排序", "Sort") },
+  { key: "status", label: l("状态", "Status") },
+  { key: "actions", label: l("操作", "Actions") },
+]);
 
 const categoryList = ref([...categories]);
 const saving = ref(false);
@@ -149,7 +151,7 @@ async function handleSave() {
 
     resetForm();
   } catch (error) {
-    errorMessage.value = normalizeTelefuncError(error, "保存失败");
+    errorMessage.value = normalizeTelefuncError(error, l("保存失败", "Save failed"));
   } finally {
     saving.value = false;
   }
@@ -172,7 +174,7 @@ async function handleToggle(category: (typeof categories)[number]) {
 }
 
 async function handleDelete(category: (typeof categories)[number]) {
-  if (!await confirmRef.value?.confirm({ title: "删除分类", message: `确认删除分类"${category.name}"吗？`, confirmText: "删除", danger: true })) {
+  if (!await confirmRef.value?.confirm({ title: l("删除分类", "Delete Category"), message: l(`确认删除分类"${category.name}"吗？`, `Delete category "${category.name}"?`), confirmText: l("删除", "Delete"), danger: true })) {
     return;
   }
 
@@ -185,7 +187,7 @@ async function handleDelete(category: (typeof categories)[number]) {
       resetForm();
     }
   } catch (error) {
-    errorMessage.value = normalizeTelefuncError(error, "删除失败");
+    errorMessage.value = normalizeTelefuncError(error, l("删除失败", "Delete failed"));
   }
 }
 </script>

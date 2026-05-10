@@ -54,6 +54,8 @@ function createMockPrisma() {
         configJson: JSON.stringify({
           baseUrl: "https://bep.example.com",
           appSecret: "secret-token",
+          merchantId: "default",
+          paymentType: "USDT-TRC20",
           notifyUrl: "/api/payments/bepusdt/notify",
         }),
       },
@@ -85,6 +87,11 @@ function createMockPrisma() {
       async create({ data }: any) {
         state.paymentLogs.push(data);
         return data;
+      },
+    },
+    telegramConfig: {
+      async findFirst() {
+        return null;
       },
     },
     order: {

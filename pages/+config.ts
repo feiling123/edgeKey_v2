@@ -7,7 +7,7 @@ import vikeVue from "vike-vue/config";
 
 export default {
   // https://vike.dev/head-tags
-  passToClient: ["user", "session", "site", "title", "description"],
+  passToClient: ["user", "session", "site", "title", "description", "adminBase"],
   extends: [vikeVue, vikePhoton],
 
   // https://vike.dev/vike-photon

@@ -4,7 +4,9 @@
 declare namespace Cloudflare {
 	interface Env {
 		DB: D1Database;
-		AUTH_SECRET: string;
+		AUTH_SECRET?: string;
+		NEXTAUTH_SECRET?: string;
+		ADMIN_PATH: string;
 	}
 }
 interface Env extends Cloudflare.Env {}
@@ -12,7 +14,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "AUTH_SECRET">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "AUTH_SECRET" | "NEXTAUTH_SECRET" | "ADMIN_PATH">> {}
 }
 
 // Begin runtime types

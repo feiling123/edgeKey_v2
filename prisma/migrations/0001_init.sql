@@ -142,22 +142,26 @@ CREATE TABLE "PaymentLog" (
 );
 
 -- CreateTable
-CREATE TABLE "EmailConfig" (
+CREATE TABLE "TelegramConfig" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "provider" TEXT NOT NULL,
     "name" TEXT NOT NULL,
+    "botToken" TEXT NOT NULL,
+    "chatId" TEXT NOT NULL,
+    "apiBaseUrl" TEXT NOT NULL DEFAULT 'https://api.telegram.org',
+    "parseMode" TEXT NOT NULL DEFAULT 'NONE',
     "isEnabled" BOOLEAN NOT NULL DEFAULT false,
-    "configJson" TEXT NOT NULL,
+    "notifyOrderPaid" BOOLEAN NOT NULL DEFAULT true,
+    "notifyDeliverySuccess" BOOLEAN NOT NULL DEFAULT true,
+    "notifyDeliveryFailed" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
-CREATE TABLE "EmailTemplate" (
+CREATE TABLE "TelegramTemplate" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "scene" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
     "content" TEXT NOT NULL,
     "isEnabled" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -165,20 +169,52 @@ CREATE TABLE "EmailTemplate" (
 );
 
 -- CreateTable
-CREATE TABLE "EmailLog" (
+CREATE TABLE "TelegramLog" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "orderId" INTEGER,
-    "provider" TEXT NOT NULL,
-    "apiProvider" TEXT,
+    "configId" INTEGER,
     "scene" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'SUCCESS',
-    "toEmail" TEXT NOT NULL,
-    "subject" TEXT NOT NULL,
-    "messageId" TEXT,
+    "chatId" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "telegramMessageId" TEXT,
     "error" TEXT,
     "triggeredBy" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "EmailLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "TelegramLog_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "Order" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "TelegramLog_configId_fkey" FOREIGN KEY ("configId") REFERENCES "TelegramConfig" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "BlogCategory" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "slug" TEXT NOT NULL,
+    "nameZh" TEXT NOT NULL,
+    "nameEn" TEXT NOT NULL,
+    "descriptionZh" TEXT,
+    "descriptionEn" TEXT,
+    "sort" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "BlogPost" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "categoryId" INTEGER,
+    "slug" TEXT NOT NULL,
+    "titleZh" TEXT NOT NULL,
+    "titleEn" TEXT NOT NULL,
+    "excerptZh" TEXT,
+    "excerptEn" TEXT,
+    "contentZh" TEXT NOT NULL,
+    "contentEn" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'DRAFT',
+    "readMinutes" INTEGER NOT NULL DEFAULT 3,
+    "publishedAt" DATETIME,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "BlogPost_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "BlogCategory" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -245,23 +281,37 @@ CREATE INDEX "PaymentLog_orderNo_idx" ON "PaymentLog"("orderNo");
 CREATE INDEX "PaymentLog_orderId_idx" ON "PaymentLog"("orderId");
 
 -- CreateIndex
-CREATE INDEX "EmailConfig_provider_idx" ON "EmailConfig"("provider");
+CREATE INDEX "TelegramConfig_isEnabled_idx" ON "TelegramConfig"("isEnabled");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "EmailTemplate_scene_key" ON "EmailTemplate"("scene");
+CREATE UNIQUE INDEX "TelegramTemplate_scene_key" ON "TelegramTemplate"("scene");
 
 -- CreateIndex
-CREATE INDEX "EmailLog_provider_createdAt_idx" ON "EmailLog"("provider", "createdAt");
+CREATE INDEX "TelegramLog_scene_createdAt_idx" ON "TelegramLog"("scene", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "EmailLog_scene_createdAt_idx" ON "EmailLog"("scene", "createdAt");
+CREATE INDEX "TelegramLog_status_createdAt_idx" ON "TelegramLog"("status", "createdAt");
 
 -- CreateIndex
-CREATE INDEX "EmailLog_status_createdAt_idx" ON "EmailLog"("status", "createdAt");
+CREATE INDEX "TelegramLog_orderId_idx" ON "TelegramLog"("orderId");
 
 -- CreateIndex
-CREATE INDEX "EmailLog_orderId_idx" ON "EmailLog"("orderId");
+CREATE INDEX "TelegramLog_configId_createdAt_idx" ON "TelegramLog"("configId", "createdAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BlogCategory_slug_key" ON "BlogCategory"("slug");
+
+-- CreateIndex
+CREATE INDEX "BlogCategory_sort_idx" ON "BlogCategory"("sort");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "BlogPost_slug_key" ON "BlogPost"("slug");
+
+-- CreateIndex
+CREATE INDEX "BlogPost_categoryId_idx" ON "BlogPost"("categoryId");
+
+-- CreateIndex
+CREATE INDEX "BlogPost_status_publishedAt_idx" ON "BlogPost"("status", "publishedAt");
 
 -- CreateIndex
 CREATE INDEX "AdminOperationLog_adminId_createdAt_idx" ON "AdminOperationLog"("adminId", "createdAt");
-

@@ -1,7 +1,7 @@
 import type { PrismaClient } from "../../generated/prisma/client";
 import { getErrorMessage } from "../../lib/app-error";
 import { logger } from "../../lib/logger";
-import { notifyDeliveryFailed, notifyDeliverySuccess } from "../email/service";
+import { notifyDeliveryFailed, notifyDeliverySuccess } from "../notify/service";
 import { conflictError, notFoundError } from "../../lib/app-error";
 import { allocateCardsForOrder } from "../inventory/allocator";
 import { updateOrderDeliveryState } from "../order/repository";
@@ -49,24 +49,21 @@ export async function deliverOrder(prisma: PrismaClient, orderNo: string) {
       deliveredAt: new Date(),
     });
 
-    if (order.contactType === "EMAIL" && order.contactValue) {
-      try {
-        await notifyDeliverySuccess({
-          prisma,
-          orderId: order.id,
-          orderNo: order.orderNo,
-          queryToken: order.queryToken,
-          productName: order.productNameSnapshot,
-          quantity: order.quantity,
-          items: contents,
-          toEmail: order.contactValue,
-        });
-      } catch (error) {
-        logger.error(error instanceof Error ? error : String(error), {
-          event: "email.delivery_success.failed",
-          orderNo: order.orderNo,
-        });
-      }
+    try {
+      await notifyDeliverySuccess({
+        prisma,
+        orderId: order.id,
+        orderNo: order.orderNo,
+        queryToken: order.queryToken,
+        productName: order.productNameSnapshot,
+        quantity: order.quantity,
+        items: contents,
+      });
+    } catch (error) {
+      logger.error(error instanceof Error ? error : String(error), {
+        event: "telegram.delivery_success.failed",
+        orderNo: order.orderNo,
+      });
     }
 
     return {
@@ -89,23 +86,20 @@ export async function deliverOrder(prisma: PrismaClient, orderNo: string) {
       deliveredAt: null,
     });
 
-    if (order.contactType === "EMAIL" && order.contactValue) {
-      try {
-        await notifyDeliveryFailed({
-          prisma,
-          orderId: order.id,
-          orderNo: order.orderNo,
-          queryToken: order.queryToken,
-          productName: order.productNameSnapshot,
-          toEmail: order.contactValue,
-          errorMessage: getErrorMessage(error, "delivery failed"),
-        });
-      } catch (emailError) {
-        logger.error(emailError instanceof Error ? emailError : String(emailError), {
-          event: "email.delivery_failed.failed",
-          orderNo: order.orderNo,
-        });
-      }
+    try {
+      await notifyDeliveryFailed({
+        prisma,
+        orderId: order.id,
+        orderNo: order.orderNo,
+        queryToken: order.queryToken,
+        productName: order.productNameSnapshot,
+        errorMessage: getErrorMessage(error, "delivery failed"),
+      });
+    } catch (notifyError) {
+      logger.error(notifyError instanceof Error ? notifyError : String(notifyError), {
+        event: "telegram.delivery_failed.failed",
+        orderNo: order.orderNo,
+      });
     }
 
     throw error;

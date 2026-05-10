@@ -32,10 +32,17 @@ async function verifyBepusdtAdapter() {
   const adapter = createBepusdtAdapter({
     baseUrl: "https://bep.example.com",
     appSecret: "secret-token",
+    merchantId: "default",
+    paymentType: "USDT-TRC20",
   });
 
   const originalFetch = globalThis.fetch;
-  globalThis.fetch = (async () => {
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert(String(input).endsWith("/api/create_order"), "BEpusdt createPayment should call Upay Pro V3 create order API");
+    const requestBody = JSON.parse(String(init?.body || "{}"));
+    assert(requestBody.type === "USDT-TRC20", "BEpusdt createPayment should include payment type");
+    assert(requestBody.merchant_id === "default", "BEpusdt createPayment should include merchant id");
+    assert(!("name" in requestBody), "BEpusdt createPayment should not sign or send unsupported name field");
     return new Response(
       JSON.stringify({
         status_code: 200,

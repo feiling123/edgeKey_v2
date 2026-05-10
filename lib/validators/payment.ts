@@ -6,6 +6,7 @@ export function validatePaymentConfigInput(input: {
   provider: string;
   isEnabled?: boolean;
   appSecret?: string;
+  paymentType?: string;
   pid?: string;
   key?: string;
 }) {
@@ -21,6 +22,9 @@ export function validatePaymentConfigInput(input: {
 
   if (input.provider === "BEPUSDT" && input.isEnabled !== false && !(input.appSecret?.trim())) {
     throw badRequestError("启用 BEpusdt 时必须填写 App Secret", "BEPUSDT_APP_SECRET_REQUIRED");
+  }
+  if (input.provider === "BEPUSDT" && input.isEnabled !== false && !(input.paymentType?.trim())) {
+    throw badRequestError("启用 BEpusdt 时必须填写支付币种", "BEPUSDT_PAYMENT_TYPE_REQUIRED");
   }
 
   if (input.provider === "EPAY" && input.isEnabled !== false) {

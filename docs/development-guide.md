@@ -289,8 +289,8 @@ import type { CommonResponse, PaginatedResponse } from '@/lib/types/common';
 - `OrderStatus`: PENDING, PAID, DELIVERED, CLOSED, FAILED
 - `PaymentStatus`: UNPAID, PAID, FAILED
 - `DeliveryStatus`: NOT_DELIVERED, DELIVERED, FAILED
-- `EmailChannel`: API, SMTP, CLOUDFLARE
-- `EmailScene`: TEST, ORDER_PAID, DELIVERY_SUCCESS, DELIVERY_FAILED
+- `TelegramScene`: TEST, ORDER_PAID, DELIVERY_SUCCESS, DELIVERY_FAILED
+- `TelegramSendStatus`: SUCCESS, FAILED
 
 ### 5. 重要项目文件
 以下是开发时需要了解的关键文件：
@@ -314,7 +314,7 @@ import type { CommonResponse, PaginatedResponse } from '@/lib/types/common';
 
 **业务模块**:
 - `modules/payment/`: 支付相关（适配器、服务、路由）
-- `modules/email/`: 邮件相关（模板、发送、日志）
+- `modules/notify/`: Telegram 通知相关（Bot API、模板、发送、日志）
 - `modules/order/`: 订单管理
 - `modules/inventory/`: 库存管理
 
@@ -482,7 +482,7 @@ edgeKey/
 ├── pages/           # Vike页面路由
 ├── components/      # Vue组件
 ├── lib/             # 核心库（logger、error、utils）
-├── modules/         # 业务模块（payment、email、order）
+├── modules/         # 业务模块（payment、notify、order）
 ├── server/          # 服务端（Hono、中间件）
 ├── prisma/          # 数据库模型和迁移
 ├── assets/          # 静态资源
@@ -495,4 +495,4 @@ edgeKey/
 - ✅ 使用Web Crypto API处理签名
 - ✅ 使用项目内置的logger模块
 - ✅ 遵循数据库迁移工作流
-- ✅ 生产环境必须配置AUTH_SECRET
+- ✅ 生产环境建议配置 AUTH_SECRET；未配置时会在 D1 RuntimeSecret 表自动生成部署独有密钥

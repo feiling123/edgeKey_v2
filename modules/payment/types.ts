@@ -14,6 +14,8 @@ export interface PaymentConfigValue {
   baseUrl: string;
   appId?: string;
   appSecret?: string;
+  merchantId?: string;
+  paymentType?: string;
   pid?: string;
   key?: string;
   notifyUrl?: string;

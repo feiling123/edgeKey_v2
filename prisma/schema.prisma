@@ -50,25 +50,14 @@ enum ContactType {
 
 
 
-enum EmailChannel {
-  API
-  SMTP
-  CLOUDFLARE
-}
-
-enum EmailApiProvider {
-  BREVO
-  MAILJET
-}
-
-enum EmailScene {
+enum TelegramScene {
   TEST
   ORDER_PAID
   DELIVERY_SUCCESS
   DELIVERY_FAILED
 }
 
-enum EmailSendStatus {
+enum TelegramSendStatus {
   SUCCESS
   FAILED
 }
@@ -109,6 +98,12 @@ enum PaymentVerifyStatus {
   FAILED
 }
 
+enum BlogPostStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
 model Admin {
   id            Int                 @id @default(autoincrement())
   username      String              @unique
@@ -134,6 +129,13 @@ model SiteSetting {
   orderNotice    String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model RuntimeSecret {
+  key       String   @id
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Category {
@@ -220,7 +222,7 @@ model Order {
   cards               Card[]
   deliveries          OrderDelivery[]
   paymentLogs         PaymentLog[]
-  emailLogs           EmailLog[]
+  telegramLogs        TelegramLog[]
 
   @@index([productId])
   @@index([status, createdAt])
@@ -268,48 +270,89 @@ model PaymentLog {
   @@index([orderId])
 }
 
-model EmailConfig {
-  id         Int          @id @default(autoincrement())
-  provider   EmailChannel
-  name       String
-  isEnabled  Boolean      @default(false)
-  configJson String
-  createdAt  DateTime     @default(now())
-  updatedAt  DateTime     @updatedAt
+model TelegramConfig {
+  id                    Int           @id @default(autoincrement())
+  name                  String
+  botToken              String
+  chatId                String
+  apiBaseUrl            String        @default("https://api.telegram.org")
+  parseMode             String        @default("NONE")
+  isEnabled             Boolean       @default(false)
+  notifyOrderPaid       Boolean       @default(true)
+  notifyDeliverySuccess Boolean       @default(true)
+  notifyDeliveryFailed  Boolean       @default(true)
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  logs                  TelegramLog[]
 
-  @@index([provider])
+  @@index([isEnabled])
 }
 
-model EmailTemplate {
-  id          Int        @id @default(autoincrement())
-  scene       EmailScene @unique
-  name        String
-  subject     String
-  content     String
-  isEnabled   Boolean    @default(true)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+model TelegramTemplate {
+  id        Int           @id @default(autoincrement())
+  scene     TelegramScene @unique
+  name      String
+  content   String
+  isEnabled Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 }
 
-model EmailLog {
-  id          Int             @id @default(autoincrement())
-  orderId     Int?
-  provider    EmailChannel
-  apiProvider EmailApiProvider?
-  scene       EmailScene
-  status      EmailSendStatus @default(SUCCESS)
-  toEmail     String
-  subject     String
-  messageId   String?
-  error       String?
-  triggeredBy String?
-  createdAt   DateTime        @default(now())
-  order       Order?          @relation(fields: [orderId], references: [id])
+model TelegramLog {
+  id                Int                @id @default(autoincrement())
+  orderId           Int?
+  configId          Int?
+  scene             TelegramScene
+  status            TelegramSendStatus @default(SUCCESS)
+  chatId            String
+  message           String
+  telegramMessageId String?
+  error             String?
+  triggeredBy       String?
+  createdAt         DateTime           @default(now())
+  order             Order?             @relation(fields: [orderId], references: [id])
+  config            TelegramConfig?    @relation(fields: [configId], references: [id], onDelete: SetNull)
 
-  @@index([provider, createdAt])
   @@index([scene, createdAt])
   @@index([status, createdAt])
   @@index([orderId])
+  @@index([configId, createdAt])
+}
+
+model BlogCategory {
+  id            Int        @id @default(autoincrement())
+  slug          String     @unique
+  nameZh        String
+  nameEn        String
+  descriptionZh String?
+  descriptionEn String?
+  sort          Int        @default(0)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  posts         BlogPost[]
+
+  @@index([sort])
+}
+
+model BlogPost {
+  id          Int            @id @default(autoincrement())
+  categoryId  Int?
+  slug        String         @unique
+  titleZh     String
+  titleEn     String
+  excerptZh   String?
+  excerptEn   String?
+  contentZh   String
+  contentEn   String
+  status      BlogPostStatus @default(DRAFT)
+  readMinutes Int            @default(3)
+  publishedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  category    BlogCategory?  @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([categoryId])
+  @@index([status, publishedAt])
 }
 
 model AdminOperationLog {

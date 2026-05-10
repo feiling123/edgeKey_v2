@@ -1,14 +1,12 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* 1. 自定义亮色模式（默认主题） */
 @plugin "daisyui/theme" {
   name: "light";
   default: true;
   --color-primary: oklch(45% 0.25 270);
 }
 
-/* 2. 自定义暗色模式（跟随系统暗黑） */
 @plugin "daisyui/theme" {
   name: "dark";
   prefersdark: true;

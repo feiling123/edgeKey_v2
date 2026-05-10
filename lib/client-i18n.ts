@@ -1,0 +1,309 @@
+import { computed, onMounted, ref } from "vue";
+
+export type Locale = "zh" | "en";
+
+const storageKey = "edgekey:locale";
+const currentLocale = ref<Locale>("zh");
+let initialized = false;
+
+const messages = {
+  zh: {
+    "nav.home": "首页",
+    "nav.blog": "博客",
+    "nav.query": "订单查询",
+    "nav.support": "联系客服",
+    "nav.frontend": "返回前台",
+    "language.label": "语言",
+    "language.zh": "中文",
+    "language.en": "English",
+    "common.edit": "编辑",
+    "common.delete": "删除",
+    "common.reset": "重置",
+    "common.saved": "已保存",
+    "common.error": "错误",
+    "common.save_failed": "保存失败",
+    "common.delete_failed": "删除失败",
+    "home.available_products": "在售商品",
+    "home.product_list": "商品列表",
+    "home.all_products": "全部商品",
+    "home.view_detail": "查看详情",
+    "home.empty": "当前还没有上架商品，请先在后台录入分类、商品和库存。",
+    "product.missing": "商品不存在或未上架。",
+    "product.label": "Product",
+    "product.price": "当前价格",
+    "product.limit": "限购 {min} - {max} 件",
+    "product.email": "联系邮箱",
+    "product.email_placeholder": "name@example.com",
+    "product.email_tip": "必填，自动发货和售后联系都会发送到这个邮箱。",
+    "product.quantity": "购买数量",
+    "product.note": "备注",
+    "product.note_placeholder": "可以留下 QQ 号、微信等联系方式",
+    "product.payment_method": "支付方式",
+    "product.epay_channel": "易支付渠道",
+    "product.submit": "提交订单",
+    "product.no_payment": "当前没有可用支付方式，请联系管理员启用支付配置。",
+    "product.default_purchase_note": "下单后将生成待支付订单，支付成功后会给您的联系邮箱发送通知，请注意查看。",
+    "product.empty_description": "暂无商品描述。",
+    "product.email_required": "联系邮箱不能为空",
+    "product.email_invalid": "联系邮箱格式不正确",
+    "product.create_failed": "下单失败",
+    "query.tab_query": "订单查询",
+    "query.tab_local": "本地订单",
+    "query.empty_local": "暂无本地订单，在本设备下单后会自动保存在此",
+    "query.paid": "已支付",
+    "query.unpaid": "待支付",
+    "query.order_no": "订单号",
+    "query.order_no_placeholder": "请输入订单号",
+    "query.token": "查询凭证",
+    "query.token_placeholder": "请输入查询 token",
+    "query.submit": "查询订单",
+    "query.not_found": "未找到匹配订单，请检查订单号和查询凭证。",
+    "query.failed": "查询失败",
+    "order.missing": "订单不存在，或查询凭证无效。",
+    "order.label": "Order",
+    "order.info": "订单信息",
+    "order.product": "商品",
+    "order.quantity": "数量",
+    "order.amount": "金额",
+    "order.payment": "支付方式",
+    "order.continue_pay": "继续支付",
+    "order.delivery": "发货内容",
+    "order.delivery_empty": "当前订单尚未支付或尚未自动发货。",
+    "order.no_pay_url": "未获取到支付链接",
+    "order.pay_failed": "拉起支付失败",
+    "blog.title": "博客",
+    "blog.subtitle": "产品更新、部署指南和运营说明集中在这里。",
+    "blog.categories": "博客分类",
+    "blog.all_categories": "全部文章",
+    "blog.posts": "博客内容",
+    "blog.read_more": "阅读全文",
+    "blog.empty": "当前分类暂无文章。",
+    "blog.back": "返回博客",
+    "blog.related": "同类文章",
+    "blog.not_found": "文章不存在或已下线。",
+    "admin.actions": "操作",
+    "admin.sort": "排序",
+    "admin.status": "状态",
+    "admin.status.active": "启用",
+    "admin.status.inactive": "停用",
+    "admin.status.draft": "草稿",
+    "admin.auto_slug": "留空则自动生成",
+    "admin.blog.title": "博客管理",
+    "admin.blog.subtitle": "管理前台博客分类和文章内容，文章编辑器支持上传图片和远程图片 Base64 转存。",
+    "admin.blog.posts": "博客内容",
+    "admin.blog.categories": "博客分类",
+    "admin.blog.new_post": "新建文章",
+    "admin.blog.edit_post": "编辑文章",
+    "admin.blog.post_list": "文章列表",
+    "admin.blog.empty_posts": "当前还没有文章。",
+    "admin.blog.new_category": "新增分类",
+    "admin.blog.edit_category": "编辑分类",
+    "admin.blog.empty_categories": "当前还没有博客分类。",
+    "admin.blog.title_zh": "中文标题",
+    "admin.blog.title_en": "英文标题",
+    "admin.blog.excerpt_zh": "中文摘要",
+    "admin.blog.excerpt_en": "英文摘要",
+    "admin.blog.category": "分类",
+    "admin.blog.category_zh": "中文分类名",
+    "admin.blog.category_en": "英文分类名",
+    "admin.blog.description_zh": "中文描述",
+    "admin.blog.description_en": "英文描述",
+    "admin.blog.no_category": "未分类",
+    "admin.blog.date": "发布日期",
+    "admin.blog.read_minutes": "阅读分钟",
+    "admin.blog.save_post": "保存文章",
+    "admin.blog.save_category": "保存分类",
+    "admin.blog.delete_post": "删除文章",
+    "admin.blog.delete_category": "删除分类",
+    "admin.blog.delete_post_confirm": "确认删除文章「{title}」吗？",
+    "admin.blog.delete_category_confirm": "确认删除分类「{name}」吗？该分类下文章会变为未分类。",
+    "status.order.PENDING": "待处理",
+    "status.order.PAID": "已支付",
+    "status.order.DELIVERED": "已发货",
+    "status.order.CLOSED": "已关闭",
+    "status.order.FAILED": "失败",
+    "status.payment.UNPAID": "未支付",
+    "status.payment.PAID": "已支付",
+    "status.payment.FAILED": "支付失败",
+    "status.delivery.NOT_DELIVERED": "未发货",
+    "status.delivery.DELIVERED": "已发货",
+    "status.delivery.FAILED": "发货失败",
+  },
+  en: {
+    "nav.home": "Home",
+    "nav.blog": "Blog",
+    "nav.query": "Orders",
+    "nav.support": "Support",
+    "nav.frontend": "Storefront",
+    "language.label": "Language",
+    "language.zh": "中文",
+    "language.en": "English",
+    "common.edit": "Edit",
+    "common.delete": "Delete",
+    "common.reset": "Reset",
+    "common.saved": "Saved",
+    "common.error": "Error",
+    "common.save_failed": "Save failed",
+    "common.delete_failed": "Delete failed",
+    "home.available_products": "Available Products",
+    "home.product_list": "Products",
+    "home.all_products": "All Products",
+    "home.view_detail": "Details",
+    "home.empty": "No products are available yet. Add categories, products, and inventory in the admin panel.",
+    "product.missing": "This product does not exist or is not available.",
+    "product.label": "Product",
+    "product.price": "Price",
+    "product.limit": "Limit {min} - {max} items",
+    "product.email": "Email",
+    "product.email_placeholder": "name@example.com",
+    "product.email_tip": "Required. Delivery and support messages will be sent to this email.",
+    "product.quantity": "Quantity",
+    "product.note": "Note",
+    "product.note_placeholder": "Leave Telegram, WhatsApp, or other contact details if needed",
+    "product.payment_method": "Payment Method",
+    "product.epay_channel": "Epay Channel",
+    "product.submit": "Place Order",
+    "product.no_payment": "No payment method is available. Please contact support.",
+    "product.default_purchase_note": "An unpaid order will be created. After payment, delivery information will be sent to your email.",
+    "product.empty_description": "No product description yet.",
+    "product.email_required": "Email is required",
+    "product.email_invalid": "Invalid email address",
+    "product.create_failed": "Failed to create order",
+    "query.tab_query": "Find Order",
+    "query.tab_local": "Local Orders",
+    "query.empty_local": "No local orders yet. Orders created on this device will appear here.",
+    "query.paid": "Paid",
+    "query.unpaid": "Unpaid",
+    "query.order_no": "Order No.",
+    "query.order_no_placeholder": "Enter order number",
+    "query.token": "Query Token",
+    "query.token_placeholder": "Enter query token",
+    "query.submit": "Find Order",
+    "query.not_found": "No matching order found. Check the order number and query token.",
+    "query.failed": "Query failed",
+    "order.missing": "Order not found, or the query token is invalid.",
+    "order.label": "Order",
+    "order.info": "Order Details",
+    "order.product": "Product",
+    "order.quantity": "Quantity",
+    "order.amount": "Amount",
+    "order.payment": "Payment",
+    "order.continue_pay": "Continue Payment",
+    "order.delivery": "Delivery",
+    "order.delivery_empty": "This order has not been paid or delivered yet.",
+    "order.no_pay_url": "Payment URL was not returned",
+    "order.pay_failed": "Failed to start payment",
+    "blog.title": "Blog",
+    "blog.subtitle": "Product updates, deployment guides, and operational notes.",
+    "blog.categories": "Categories",
+    "blog.all_categories": "All Posts",
+    "blog.posts": "Posts",
+    "blog.read_more": "Read More",
+    "blog.empty": "No posts in this category yet.",
+    "blog.back": "Back to Blog",
+    "blog.related": "Related Posts",
+    "blog.not_found": "This post does not exist or is unavailable.",
+    "admin.actions": "Actions",
+    "admin.sort": "Sort",
+    "admin.status": "Status",
+    "admin.status.active": "Active",
+    "admin.status.inactive": "Inactive",
+    "admin.status.draft": "Draft",
+    "admin.auto_slug": "Leave empty to generate automatically",
+    "admin.blog.title": "Blog Management",
+    "admin.blog.subtitle": "Manage public blog categories and posts. The editor supports image uploads and remote image conversion to Base64.",
+    "admin.blog.posts": "Posts",
+    "admin.blog.categories": "Categories",
+    "admin.blog.new_post": "New Post",
+    "admin.blog.edit_post": "Edit Post",
+    "admin.blog.post_list": "Post List",
+    "admin.blog.empty_posts": "No posts yet.",
+    "admin.blog.new_category": "New Category",
+    "admin.blog.edit_category": "Edit Category",
+    "admin.blog.empty_categories": "No blog categories yet.",
+    "admin.blog.title_zh": "Chinese Title",
+    "admin.blog.title_en": "English Title",
+    "admin.blog.excerpt_zh": "Chinese Excerpt",
+    "admin.blog.excerpt_en": "English Excerpt",
+    "admin.blog.category": "Category",
+    "admin.blog.category_zh": "Chinese Category Name",
+    "admin.blog.category_en": "English Category Name",
+    "admin.blog.description_zh": "Chinese Description",
+    "admin.blog.description_en": "English Description",
+    "admin.blog.no_category": "Uncategorized",
+    "admin.blog.date": "Publish Date",
+    "admin.blog.read_minutes": "Read Minutes",
+    "admin.blog.save_post": "Save Post",
+    "admin.blog.save_category": "Save Category",
+    "admin.blog.delete_post": "Delete Post",
+    "admin.blog.delete_category": "Delete Category",
+    "admin.blog.delete_post_confirm": "Delete post \"{title}\"?",
+    "admin.blog.delete_category_confirm": "Delete category \"{name}\"? Posts in this category will become uncategorized.",
+    "status.order.PENDING": "Pending",
+    "status.order.PAID": "Paid",
+    "status.order.DELIVERED": "Delivered",
+    "status.order.CLOSED": "Closed",
+    "status.order.FAILED": "Failed",
+    "status.payment.UNPAID": "Unpaid",
+    "status.payment.PAID": "Paid",
+    "status.payment.FAILED": "Payment Failed",
+    "status.delivery.NOT_DELIVERED": "Not Delivered",
+    "status.delivery.DELIVERED": "Delivered",
+    "status.delivery.FAILED": "Delivery Failed",
+  },
+} as const;
+
+type TranslationKey = keyof typeof messages.zh;
+
+export function useI18n() {
+  onMounted(initializeLocale);
+  const locale = computed(() => currentLocale.value);
+  return {
+    locale,
+    setLocale,
+    toggleLocale,
+    t,
+    l,
+  };
+}
+
+export function t(key: TranslationKey, params?: Record<string, string | number>) {
+  let text: string = messages[currentLocale.value][key] || messages.zh[key] || key;
+  if (!params) return text;
+  for (const [name, value] of Object.entries(params)) {
+    text = text.replaceAll(`{${name}}`, String(value));
+  }
+  return text;
+}
+
+export function l(zh: string, en: string) {
+  return currentLocale.value === "zh" ? zh : en;
+}
+
+export function setLocale(locale: Locale) {
+  currentLocale.value = locale;
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(storageKey, locale);
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+  }
+}
+
+export function toggleLocale() {
+  setLocale(currentLocale.value === "zh" ? "en" : "zh");
+}
+
+export function getCurrentLocale() {
+  return currentLocale.value;
+}
+
+function initializeLocale() {
+  if (initialized || typeof window === "undefined") return;
+  initialized = true;
+  const saved = window.localStorage.getItem(storageKey);
+  if (saved === "zh" || saved === "en") {
+    setLocale(saved);
+    return;
+  }
+  const browserLocale = window.navigator.languages?.[0] || window.navigator.language || "";
+  setLocale(browserLocale.toLowerCase().startsWith("zh") ? "zh" : "en");
+}

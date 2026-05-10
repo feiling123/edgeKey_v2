@@ -9,7 +9,7 @@
         </thead>
         <tbody>
           <tr v-if="!rows.length">
-            <td :colspan="columns.length" class="text-center text-base-content/60">{{ emptyText }}</td>
+            <td :colspan="columns.length" class="text-center text-base-content/60">{{ emptyLabel }}</td>
           </tr>
           <tr v-for="(row, i) in rows" :key="i">
             <td v-for="col in columns" :key="col.key">
@@ -21,7 +21,7 @@
     </div>
 
     <div v-if="total > pageSize" class="flex items-center justify-between">
-      <span class="text-sm text-base-content/60">共 {{ total }} 条，第 {{ page }}/{{ totalPages }} 页</span>
+      <span class="text-sm text-base-content/60">{{ l("共", "Total") }} {{ total }} {{ l("条，第", "items, page") }} {{ page }}/{{ totalPages }}</span>
       <div class="join">
         <button class="join-item btn btn-sm" :disabled="page <= 1" @click="$emit('update:page', page - 1)">«</button>
         <button
@@ -39,6 +39,7 @@
 
 <script setup lang="ts" generic="T extends Record<string, any>">
 import { computed } from "vue";
+import { useI18n } from "../lib/client-i18n";
 
 const props = withDefaults(defineProps<{
   columns: { key: string; label: string }[];
@@ -49,12 +50,14 @@ const props = withDefaults(defineProps<{
   emptyText?: string;
 }>(), {
   pageSize: 20,
-  emptyText: "暂无数据",
+  emptyText: "",
 });
 
 defineEmits<{ "update:page": [page: number] }>();
+const { l } = useI18n();
 
 const totalPages = computed(() => Math.max(1, Math.ceil(props.total / props.pageSize)));
+const emptyLabel = computed(() => props.emptyText || l("暂无数据", "No data"));
 
 const pageNumbers = computed(() => {
   const pages: number[] = [];

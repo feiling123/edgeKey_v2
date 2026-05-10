@@ -1,13 +1,12 @@
 import { assertAdminAccess } from "../../../modules/auth/service";
-import { saveEmailTemplate } from "../../../modules/email/service";
+import { saveTelegramTemplate } from "../../../modules/notify/service";
 
-export async function onSaveEmailTemplate(input: {
+export async function onSaveTelegramTemplate(input: {
   scene: "TEST" | "ORDER_PAID" | "DELIVERY_SUCCESS" | "DELIVERY_FAILED";
   name: string;
-  subject: string;
   content: string;
   isEnabled: boolean;
 }) {
   assertAdminAccess();
-  return saveEmailTemplate(input);
+  return saveTelegramTemplate(input);
 }

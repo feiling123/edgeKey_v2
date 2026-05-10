@@ -3,65 +3,65 @@
     <div class="card-body space-y-4">
       <div class="flex items-center justify-between gap-4 max-md:flex-col max-md:items-start">
         <div>
-          <h1 class="text-2xl font-bold">站点设置</h1>
-          <p class="text-sm text-base-content/70">维护前台展示的站点名称、公告、客服和下单提示。</p>
+          <h1 class="text-2xl font-bold">{{ l("站点设置", "Site Settings") }}</h1>
+          <p class="text-sm text-base-content/70">{{ l("维护前台展示的站点名称、公告、客服和下单提示。", "Maintain storefront name, notices, support contact, and order notes.") }}</p>
         </div>
-        <span v-if="saved" class="badge badge-success">已保存</span>
+        <span v-if="saved" class="badge badge-success">{{ l("已保存", "Saved") }}</span>
       </div>
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">站点名称</span>
+          <span class="label-text font-medium">{{ l("站点名称", "Site Name") }}</span>
           <input v-model="form.siteName" class="input input-bordered w-full" />
         </label>
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">网站地址</span>
+          <span class="label-text font-medium">{{ l("网站地址", "Site URL") }}</span>
           <input v-model="form.siteUrl" class="input input-bordered w-full" placeholder="https://example.com" />
         </label>
       </div>
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">副标题</span>
+          <span class="label-text font-medium">{{ l("副标题", "Subtitle") }}</span>
           <input v-model="form.siteSubtitle" class="input input-bordered w-full" />
         </label>
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">网站Favicon (ico & png)</span>
+          <span class="label-text font-medium">{{ l("网站 Favicon (ico & png)", "Favicon (ico & png)") }}</span>
           <input v-model="form.logoIcon" class="input input-bordered w-full" placeholder="https://example.com/favicon.ico" />
         </label>
       </div>
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex flex-col gap-1.5 md:col-span-2">
-          <span class="label-text font-medium">网站Logo URL</span>
+          <span class="label-text font-medium">{{ l("网站 Logo URL", "Logo URL") }}</span>
           <input v-model="form.logo" class="input input-bordered w-full" placeholder="https://example.com/logo.png" />
         </label>
       </div>
 
       <label class="flex flex-col gap-1.5">
-        <span class="label-text font-medium">首页公告</span>
+        <span class="label-text font-medium">{{ l("首页公告", "Homepage Notice") }}</span>
         <textarea v-model="form.notice" class="textarea textarea-bordered w-full" rows="4"></textarea>
       </label>
 
       <div class="grid gap-4 md:grid-cols-2">
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">客服联系方式</span>
-          <textarea v-model="form.supportContact" class="textarea textarea-bordered w-full" rows="3" placeholder="格式：文字|链接（无链接直接填文字）&#10;例：联系客服|https://t.me/123&#10;例：邮件支持|mailto:support@example.com"></textarea>
-          <span class="text-xs text-base-content/50">每行一条。纯文字直接填写；需要链接时用 | 分隔，格式：显示文字|链接地址</span>
+          <span class="label-text font-medium">{{ l("客服联系方式", "Support Contacts") }}</span>
+          <textarea v-model="form.supportContact" class="textarea textarea-bordered w-full" rows="3" :placeholder="l('格式：文字|链接（无链接直接填文字）\n例：联系客服|https://t.me/123\n例：邮件支持|mailto:support@example.com', 'Format: text|link. Plain text is also allowed.\nExample: Telegram|https://t.me/123\nExample: Email|mailto:support@example.com')"></textarea>
+          <span class="text-xs text-base-content/50">{{ l("每行一条。纯文字直接填写；需要链接时用 | 分隔，格式：显示文字|链接地址", "One item per line. Use plain text, or split display text and URL with |.") }}</span>
         </label>
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">页脚文案</span>
-          <textarea v-model="form.footerText" class="textarea textarea-bordered w-full" rows="2" placeholder="© 2026 xxxx 版权所有"></textarea>
+          <span class="label-text font-medium">{{ l("页脚文案", "Footer Text") }}</span>
+          <textarea v-model="form.footerText" class="textarea textarea-bordered w-full" rows="2" :placeholder="l('© 2026 xxxx 版权所有', '© 2026 Example. All rights reserved.')"></textarea>
         </label>
       </div>
 
       <label class="flex flex-col gap-1.5">
-        <span class="label-text font-medium">下单提示</span>
+        <span class="label-text font-medium">{{ l("下单提示", "Order Notice") }}</span>
         <textarea v-model="form.orderNotice" class="textarea textarea-bordered w-full" rows="4"></textarea>
       </label>
 
       <div class="flex items-center gap-3">
-        <AppButton variant="primary" :loading="saving" @click="handleSave">保存设置</AppButton>
+        <AppButton variant="primary" :loading="saving" @click="handleSave">{{ l("保存设置", "Save Settings") }}</AppButton>
         <span v-if="errorMessage" class="text-sm text-error">{{ errorMessage }}</span>
       </div>
     </div>
@@ -75,8 +75,10 @@ import { reactive, ref } from "vue";
 import { useData } from "vike-vue/useData";
 import { onSaveSiteSettings } from "./saveSiteSettings.telefunc";
 import type { Data } from "./+data";
+import { useI18n } from "../../../lib/client-i18n";
 
 const { site } = useData<Data>();
+const { l } = useI18n();
 
 const form = reactive({
   siteName: site.siteName,
@@ -112,7 +114,7 @@ async function handleSave() {
     form.orderNotice = result.orderNotice ?? "";
     saved.value = true;
   } catch (error) {
-    errorMessage.value = normalizeTelefuncError(error, "保存失败");
+    errorMessage.value = normalizeTelefuncError(error, l("保存失败", "Save failed"));
   } finally {
     saving.value = false;
   }

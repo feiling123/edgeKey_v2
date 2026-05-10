@@ -6,38 +6,49 @@ export function registerSitemapRoutes(app: Hono) {
   app.get("/sitemap.xml", async (c) => {
     const origin = new URL(c.req.url).origin;
 
-    // 静态页面
     const staticPages = [
       { loc: `${origin}/`, changefreq: "daily", priority: "1.0" },
+      { loc: `${origin}/blog`, changefreq: "weekly", priority: "0.7" },
       { loc: `${origin}/query`, changefreq: "weekly", priority: "0.5" },
     ];
 
-    // 尝试从数据库查询上架商品，失败时降级为仅静态页面
     let productPages: { loc: string; changefreq: string; priority: string }[] = [];
+    let blogPages: { loc: string; changefreq: string; priority: string }[] = [];
     try {
       const universalContext = (c as any).get("universalContext") as { prisma: PrismaClient } | undefined;
       const prisma = universalContext?.prisma;
       if (prisma) {
-        const products = await prisma.product.findMany({
-          where: { status: "ACTIVE" },
-          select: { slug: true },
-          orderBy: { sort: "asc" },
-        });
+        const [products, posts] = await Promise.all([
+          prisma.product.findMany({
+            where: { status: "ACTIVE" },
+            select: { slug: true },
+            orderBy: { sort: "asc" },
+          }),
+          prisma.blogPost.findMany({
+            where: { status: "ACTIVE" },
+            select: { slug: true },
+            orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
+          }),
+        ]);
         productPages = products.map((p) => ({
           loc: `${origin}/product/${p.slug}`,
           changefreq: "weekly",
           priority: "0.8",
         }));
+        blogPages = posts.map((post) => ({
+          loc: `${origin}/blog/${post.slug}`,
+          changefreq: "monthly",
+          priority: "0.6",
+        }));
       }
     } catch (error) {
       logger.error(error instanceof Error ? error : new Error(String(error)), {
-        event: "sitemap.products_query_failed",
+        event: "sitemap.dynamic_query_failed",
         source: "sitemap",
       });
-      // 降级：仅使用静态页面，不影响网站运行
     }
 
-    const allPages = [...staticPages, ...productPages];
+    const allPages = [...staticPages, ...blogPages, ...productPages];
 
     const urlEntries = allPages
       .map(

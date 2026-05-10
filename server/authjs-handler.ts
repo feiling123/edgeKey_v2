@@ -4,30 +4,77 @@ import CredentialsProvider from "@auth/core/providers/credentials";
 import type { Session } from "@auth/core/types";
 import { enhance, type UniversalHandler, type UniversalMiddleware } from "@universal-middleware/core";
 import { PrismaClient } from "../generated/prisma/client";
+import { randomBytes } from "node:crypto";
 import { internalServerError, rateLimitError } from "../lib/app-error";
 import { logger } from "../lib/logger";
+import { adminPublicPath } from "../lib/admin-path";
 import { verifyAdminPassword, hashAdminPassword } from "../modules/auth/crypto";
 
 const ADMIN_ROLE = "admin" as const;
+const AUTH_SECRET_KEY = "auth_secret";
 const loginAttemptStore = new Map<string, { count: number; expiresAt: number }>();
+let cachedGeneratedAuthSecret: string | null = null;
 
 interface AuthContext {
   prisma: PrismaClient;
   session?: Session | null;
 }
 
-function getAuthSecret() {
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+async function getAuthSecret(prisma: PrismaClient) {
+  const secret = process.env.AUTH_SECRET?.trim() || process.env.NEXTAUTH_SECRET?.trim();
 
   if (!secret) {
-    throw internalServerError("认证配置缺失", "AUTH_SECRET_MISSING", {
-      details: {
-        envKeys: ["AUTH_SECRET", "NEXTAUTH_SECRET"],
-      },
-    });
+    return getGeneratedAuthSecret(prisma);
   }
 
   return secret;
+}
+
+async function getGeneratedAuthSecret(prisma: PrismaClient) {
+  if (cachedGeneratedAuthSecret) {
+    return cachedGeneratedAuthSecret;
+  }
+
+  const existing = await prisma.runtimeSecret.findUnique({
+    where: { key: AUTH_SECRET_KEY },
+  });
+  if (existing?.value) {
+    cachedGeneratedAuthSecret = existing.value;
+    return existing.value;
+  }
+
+  const value = randomBytes(32).toString("hex");
+  try {
+    const created = await prisma.runtimeSecret.create({
+      data: {
+        key: AUTH_SECRET_KEY,
+        value,
+      },
+    });
+    cachedGeneratedAuthSecret = created.value;
+    logger.warn("auth.secret.generated_from_d1", {
+      event: "auth.secret.generated_from_d1",
+      message: "AUTH_SECRET is not configured; generated a per-install secret in D1.",
+    });
+    return created.value;
+  } catch (error: any) {
+    if (error?.code === "P2002") {
+      const record = await prisma.runtimeSecret.findUnique({
+        where: { key: AUTH_SECRET_KEY },
+      });
+      if (record?.value) {
+        cachedGeneratedAuthSecret = record.value;
+        return record.value;
+      }
+    }
+    throw internalServerError("认证密钥初始化失败", "AUTH_SECRET_INIT_FAILED", {
+      cause: error,
+      details: {
+        table: "RuntimeSecret",
+        key: AUTH_SECRET_KEY,
+      },
+    });
+  }
 }
 
 function getLoginRateLimitConfig() {
@@ -102,16 +149,16 @@ async function findAdminByCredentials(prisma: PrismaClient, username: string, pa
   };
 }
 
-function createAuthjsConfig(prisma: PrismaClient) {
+async function createAuthjsConfig(prisma: PrismaClient) {
   return {
     basePath: "/api/auth",
     trustHost: true,
-    secret: getAuthSecret(),
+    secret: await getAuthSecret(prisma),
     session: {
       strategy: "jwt",
     },
     pages: {
-      signIn: "/admin/login",
+      signIn: `${adminPublicPath(process.env)}/login`,
     },
     providers: [
       CredentialsProvider({
@@ -188,7 +235,7 @@ export const authjsSessionMiddleware: UniversalMiddleware = enhance(
   async (request, context) => {
     try {
       const authContext = context as unknown as AuthContext;
-      const config = createAuthjsConfig(authContext.prisma);
+      const config = await createAuthjsConfig(authContext.prisma);
       return {
         ...authContext,
         // Sets pageContext.session
@@ -225,7 +272,7 @@ export const authjsHandler = enhance(
     }
 
     const authContext = context as unknown as AuthContext;
-    return Auth(request, createAuthjsConfig(authContext.prisma));
+    return Auth(request, await createAuthjsConfig(authContext.prisma));
   },
   {
     name: "my-app:authjs-handler",

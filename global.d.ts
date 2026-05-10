@@ -11,6 +11,7 @@ declare global {
       session?: Session | null;
       prisma: PrismaClient;
       site?: Awaited<ReturnType<typeof getPublicSiteInfo>>;
+      adminBase?: string;
     }
   }
 }

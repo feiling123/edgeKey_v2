@@ -4,7 +4,7 @@ import { badRequestError, conflictError, externalServiceError, notFoundError } f
 import { logger } from "../../lib/logger";
 import { validatePaymentConfigInput } from "../../lib/validators/payment";
 import { getAdminContext, logAdminOperation } from "../auth/service";
-import { notifyOrderPaid } from "../email/service";
+import { notifyOrderPaid } from "../notify/service";
 import { getSiteSetting } from "../site/service";
 import { createPaymentLogRecord, getPaymentConfigRecord, listPaymentConfigRecords, upsertPaymentConfigRecord } from "./repository";
 import type { PaymentMethodItem, PaymentProvider } from "./types";
@@ -15,7 +15,6 @@ import { createAlipayAdapter, queryAlipayTrade } from "./alipay";
 import { createStripeAdapter } from "./stripe";
 import { deliverOrder } from "../delivery/service";
 import { findOrderRecord, updateOrderPayment } from "../order/repository";
-import { notifyOrderPaid as _notifyOrderPaid } from "../email/service";
 
 const defaultPaymentConfigs: Record<PaymentProvider, PaymentConfigValue> = {
   BEPUSDT: {
@@ -25,6 +24,8 @@ const defaultPaymentConfigs: Record<PaymentProvider, PaymentConfigValue> = {
     baseUrl: "",
     appId: "",
     appSecret: "",
+    merchantId: "default",
+    paymentType: "USDT-TRC20",
     notifyUrl: "/api/payments/bepusdt/notify",
     returnUrl: "/order/{orderNo}?token={token}",
   },
@@ -126,6 +127,8 @@ export async function savePaymentConfig(input: PaymentConfigValue) {
     baseUrl: input.baseUrl?.trim() || "",
     appId: input.appId?.trim() || "",
     appSecret: input.appSecret?.trim() || "",
+    merchantId: input.merchantId?.trim() || "default",
+    paymentType: input.paymentType?.trim() || "",
     pid: input.pid?.trim() || "",
     key: input.key?.trim() || "",
     notifyUrl: input.notifyUrl?.trim() || "",
@@ -561,24 +564,21 @@ export async function handlePaymentNotify(
       status: verified.status,
     });
 
-    if (order.contactType === "EMAIL" && order.contactValue) {
-      try {
-        await notifyOrderPaid({
-          prisma,
-          orderId: order.id,
-          orderNo: order.orderNo,
-          queryToken: order.queryToken,
-          productName: order.productNameSnapshot,
-          amount: order.amount,
-          toEmail: order.contactValue,
-        });
-      } catch (error) {
-        logger.error(error instanceof Error ? error : String(error), {
-          event: "email.order_paid.failed",
-          provider,
-          orderNo: order.orderNo,
-        });
-      }
+    try {
+      await notifyOrderPaid({
+        prisma,
+        orderId: order.id,
+        orderNo: order.orderNo,
+        queryToken: order.queryToken,
+        productName: order.productNameSnapshot,
+        amount: order.amount,
+      });
+    } catch (error) {
+      logger.error(error instanceof Error ? error : String(error), {
+        event: "telegram.order_paid.failed",
+        provider,
+        orderNo: order.orderNo,
+      });
     }
 
     try {

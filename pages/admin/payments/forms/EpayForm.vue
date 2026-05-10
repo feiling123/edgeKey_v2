@@ -10,11 +10,13 @@
     </label>
   </div>
   <p class="text-xs text-base-content/60">
-    `Notify URL` 和 `Return URL` 支持填写相对路径或完整 URL；`Return URL` 支持 `{orderNo}`、`{token}` 占位符。
+    {{ l("`Notify URL` 和 `Return URL` 支持填写相对路径或完整 URL；`Return URL` 支持 `{orderNo}`、`{token}` 占位符。", "`Notify URL` and `Return URL` support relative paths or absolute URLs. `Return URL` supports `{orderNo}` and `{token}` placeholders.") }}
   </p>
 </template>
 
 <script setup lang="ts">
 import SecretInput from "../../../../components/SecretInput.vue";
+import { useI18n } from "../../../../lib/client-i18n";
 defineProps<{ modelValue: Record<string, any> }>();
+const { l } = useI18n();
 </script>

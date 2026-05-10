@@ -2,21 +2,20 @@
   <div class="mx-auto">
 
     <div class="tabs tabs-lift">
-      <a class="tab" :class="{ 'tab-active': activeTab === 'query' }" @click="activeTab = 'query'">订单查询</a>
+      <a class="tab" :class="{ 'tab-active': activeTab === 'query' }" @click="activeTab = 'query'">{{ t("query.tab_query") }}</a>
       <a class="tab" :class="{ 'tab-active': activeTab === 'local' }" @click="activeTab = 'local'">
-        本地订单
+        {{ t("query.tab_local") }}
         <span v-if="localOrders.length" class="indicator-item badge badge-primary badge-sm ml-1">{{ localOrders.length }}</span>
       </a>
     </div>
 
-    <!-- 本地订单 -->
     <div v-if="activeTab === 'local'" class="card bg-base-100 shadow-sm rounded-tl-none">
       <div class="card-body">
         <div v-if="!localOrders.length" class="flex flex-col items-center gap-2 py-8 text-base-content/40">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
           </svg>
-          <p class="text-sm">暂无本地订单，在本设备下单后会自动保存在此</p>
+          <p class="text-sm">{{ t("query.empty_local") }}</p>
         </div>
 
         <div v-else class="space-y-2 max-h-96 overflow-y-auto pr-1">
@@ -32,7 +31,7 @@
             <div class="flex items-center gap-3 shrink-0 ml-4">
               <span v-if="o.paymentStatus" class="text-xs px-2 py-0.5 rounded-full font-medium"
                 :class="o.paymentStatus === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'">
-                {{ o.paymentStatus === 'PAID' ? '已支付' : '待支付' }}
+                {{ o.paymentStatus === 'PAID' ? t("query.paid") : t("query.unpaid") }}
               </span>
               <div class="text-right">
                 <div class="text-sm font-bold text-primary">{{ formatCents(o.amount) }}</div>
@@ -47,19 +46,18 @@
       </div>
     </div>
 
-    <!-- 手动查询 -->
     <div v-if="activeTab === 'query'" class="card bg-base-100 shadow-sm rounded-tl-none">
       <div class="card-body space-y-4">
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">订单号</span>
-          <input v-model="orderNo" class="input input-bordered w-full" placeholder="请输入订单号" />
+          <span class="label-text font-medium">{{ t("query.order_no") }}</span>
+          <input v-model="orderNo" class="input input-bordered w-full" :placeholder="t('query.order_no_placeholder')" />
         </label>
         <label class="flex flex-col gap-1.5">
-          <span class="label-text font-medium">查询凭证</span>
-          <input v-model="queryToken" class="input input-bordered w-full" placeholder="请输入查询 token" />
+          <span class="label-text font-medium">{{ t("query.token") }}</span>
+          <input v-model="queryToken" class="input input-bordered w-full" :placeholder="t('query.token_placeholder')" />
         </label>
         <div class="flex items-center gap-3">
-          <AppButton variant="primary" :loading="querying" @click="handleQuery">查询订单</AppButton>
+          <AppButton variant="primary" :loading="querying" @click="handleQuery">{{ t("query.submit") }}</AppButton>
           <span v-if="errorMessage" class="text-sm text-error">{{ errorMessage }}</span>
         </div>
       </div>
@@ -75,6 +73,7 @@ import AppButton from "../../components/AppButton.vue";
 import { onQueryOrder } from "./queryOrder.telefunc";
 import { getLocalOrders, type LocalOrder } from "../../lib/local-orders";
 import { formatCents } from "../../lib/utils/money";
+import { useI18n } from "../../lib/client-i18n";
 
 const activeTab = ref<"local" | "query">("query");
 const orderNo = ref("");
@@ -82,13 +81,14 @@ const queryToken = ref("");
 const errorMessage = ref("");
 const querying = ref(false);
 const localOrders = ref<LocalOrder[]>([]);
+const { locale, t } = useI18n();
 
 onMounted(() => {
   localOrders.value = getLocalOrders();
 });
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("zh-CN", { dateStyle: "short", timeStyle: "short" });
+  return new Date(iso).toLocaleString(locale.value === "zh" ? "zh-CN" : "en-US", { dateStyle: "short", timeStyle: "short" });
 }
 
 async function handleQuery() {
@@ -102,13 +102,13 @@ async function handleQuery() {
     });
 
     if (!result) {
-      errorMessage.value = "未找到匹配订单，请检查订单号和查询凭证。";
+      errorMessage.value = t("query.not_found");
       return;
     }
 
     window.location.href = `/order/${result.orderNo}?token=${encodeURIComponent(queryToken.value)}`;
   } catch (error) {
-    errorMessage.value = normalizeTelefuncError(error, "查询失败");
+    errorMessage.value = normalizeTelefuncError(error, t("query.failed"));
   } finally {
     querying.value = false;
   }

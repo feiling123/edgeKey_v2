@@ -25,8 +25,8 @@ EdgeKey这是专为“懒人”准备的发卡系统。 它可以运行 Cloudfla
 
 ![教程](./6.jpg)
 
-在你的小站网址比如 edge-key.xxx.workers.dev 后面加上 /admin ，就是你的后台登录地址，假设我的小站地址是 edge-key.12345.workers.dev
-那么登录地址就是edge-key.12345.workers.dev/admin，  输入用户名 admin，密码 admin123456 即可登录后台上架商品。
+后台路径由 `ADMIN_PATH` 变量控制，默认是 `admin`。在你的小站网址比如 edge-key.xxx.workers.dev 后面加上 /admin，就是默认后台登录地址。
+假设小站地址是 edge-key.12345.workers.dev，那么默认登录地址就是 edge-key.12345.workers.dev/admin。上线后建议在 Cloudflare Variables 中把 `ADMIN_PATH` 改成随机路径。输入用户名 admin，密码 admin123456 即可登录后台上架商品。
 
 ## 【注册教程】
 

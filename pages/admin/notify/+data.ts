@@ -1,4 +1,4 @@
-import { getEmailManagementData } from "../../../modules/email/service";
+import { getTelegramManagementData } from "../../../modules/notify/service";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 
@@ -13,15 +13,12 @@ export async function data(pageContext: {
       logs: [],
       metrics: [],
       pushSettings: {
-        customerSendOrderPaidEmail: false,
-        customerSendDeliverySuccessEmail: false,
-        customerSendDeliveryFailedEmail: false,
-        adminSendOrderPaidEmail: false,
-        adminSendDeliverySuccessEmail: false,
-        adminSendDeliveryFailedEmail: false,
+        notifyOrderPaid: false,
+        notifyDeliverySuccess: false,
+        notifyDeliveryFailed: false,
       },
     };
   }
 
-  return getEmailManagementData(pageContext.prisma);
+  return getTelegramManagementData(pageContext.prisma);
 }

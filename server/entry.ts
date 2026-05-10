@@ -4,6 +4,7 @@ import { telefuncHandler } from "./telefunc-handler";
 import { prismaMiddleware } from "./prisma-middleware";
 import { registerApiRoutes } from "./routes";
 import { scheduled } from "./scheduled";
+import { adminPublicPath, INTERNAL_ADMIN_REWRITE_HEADER, isAdminPath, mapPublicAdminPath, nginx404 } from "../lib/admin-path";
 import { createRequestContext, runWithRequestContext } from "../lib/request-context";
 import { apply, serve } from "@photonjs/hono";
 import { Hono } from "hono";
@@ -23,6 +24,11 @@ export function createApp() {
   const apiApp = new Hono();
 
   app.use(async (c, next) => {
+    const env = c.env as { ADMIN_PATH?: string; AUTH_SECRET?: string; NEXTAUTH_SECRET?: string } | undefined;
+    if (env?.ADMIN_PATH) process.env.ADMIN_PATH = String(env.ADMIN_PATH);
+    if (env?.AUTH_SECRET) process.env.AUTH_SECRET = String(env.AUTH_SECRET);
+    if (env?.NEXTAUTH_SECRET) process.env.NEXTAUTH_SECRET = String(env.NEXTAUTH_SECRET);
+
     const requestContext = createRequestContext(c.req.raw);
     (c as any).set("requestId", requestContext.requestId);
     (c as any).set("universalContext", {
@@ -34,6 +40,32 @@ export function createApp() {
     });
 
     c.header("x-request-id", requestContext.requestId);
+  });
+
+  app.use("*", async (c, next) => {
+    const adminBase = adminPublicPath(c.env as { ADMIN_PATH?: string } | undefined);
+    const url = new URL(c.req.url);
+    const internalRewrite = c.req.header(INTERNAL_ADMIN_REWRITE_HEADER) === "1";
+
+    if (isAdminPath(url.pathname, adminBase) && !internalRewrite) {
+      const mappedUrl = mapPublicAdminPath(url, adminBase);
+      const headers = new Headers(c.req.raw.headers);
+      headers.set(INTERNAL_ADMIN_REWRITE_HEADER, "1");
+      const method = c.req.raw.method.toUpperCase();
+      const mappedRequest = new Request(mappedUrl, {
+        method,
+        headers,
+        body: method === "GET" || method === "HEAD" ? undefined : c.req.raw.body,
+        redirect: c.req.raw.redirect,
+      });
+      return app.fetch(mappedRequest, c.env, (c as any).executionCtx);
+    }
+
+    if (adminBase !== "/admin" && isAdminPath(url.pathname, "/admin") && !internalRewrite) {
+      return nginx404();
+    }
+
+    await next();
   });
   // api对外提供接口服务
   // `/api/*` 路由使用独立的 Hono 子应用，原因有两个：
