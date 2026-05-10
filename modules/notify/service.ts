@@ -85,9 +85,21 @@ function normalizeTelegramConfig(record: TelegramConfigRecord): TelegramConfigVa
     notifyOrderPaid: record.notifyOrderPaid,
     notifyDeliverySuccess: record.notifyDeliverySuccess,
     notifyDeliveryFailed: record.notifyDeliveryFailed,
-    createdAt: record.createdAt.toISOString(),
-    updatedAt: record.updatedAt.toISOString(),
+    createdAt: toIsoString(record.createdAt),
+    updatedAt: toIsoString(record.updatedAt),
   };
+}
+
+function toIsoString(value: Date | string | number | null | undefined) {
+  if (!value) return "";
+  if (value instanceof Date) return value.toISOString();
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? String(value) : date.toISOString();
+}
+
+function normalizeId(value: unknown) {
+  const id = typeof value === "number" ? value : Number(value);
+  return Number.isInteger(id) && id > 0 ? id : undefined;
 }
 
 function normalizeTelegramTemplate(record: TelegramTemplateRecord | undefined, scene: TelegramScene): TelegramTemplateValue {
@@ -289,7 +301,7 @@ export async function getTelegramManagementData(prisma?: PrismaClient) {
     telegramMessageId: item.telegramMessageId,
     error: item.error,
     triggeredBy: item.triggeredBy,
-    createdAt: item.createdAt.toISOString(),
+    createdAt: toIsoString(item.createdAt),
   }));
 
   return {
@@ -338,8 +350,9 @@ export async function activateTelegramConfig(id: number) {
 export async function saveTelegramConfig(input: TelegramConfigValue) {
   const context = getAdminContext();
   const validated = validateTelegramConfigInput(input);
+  const configId = normalizeId(input.id);
   const existingConfigs = await listTelegramConfigRecords(context.prisma);
-  const shouldEnable = input.id ? validated.isEnabled : (validated.isEnabled || existingConfigs.length === 0);
+  const shouldEnable = configId ? validated.isEnabled : (validated.isEnabled || existingConfigs.length === 0);
   const data = {
     name: validated.name || `Telegram ${validated.chatId}`,
     botToken: validated.botToken,
@@ -356,16 +369,16 @@ export async function saveTelegramConfig(input: TelegramConfigValue) {
     await context.prisma.telegramConfig.updateMany({ data: { isEnabled: false } });
   }
 
-  if (input.id) {
-    const existing = await getTelegramConfigRecordById(context.prisma, input.id);
+  if (configId) {
+    const existing = await getTelegramConfigRecordById(context.prisma, configId);
     if (!existing) {
       throw badRequestError("Telegram Bot 配置不存在", "TELEGRAM_CONFIG_NOT_FOUND");
     }
-    const record = await updateTelegramConfigRecord(context.prisma, input.id, data);
+    const record = await updateTelegramConfigRecord(context.prisma, configId, data);
     await logAdminOperation({
       action: "UPDATE_TELEGRAM_CONFIG",
       targetType: "TelegramConfig",
-      targetId: String(input.id),
+      targetId: String(configId),
       detail: data.name,
     });
     return normalizeTelegramConfig(record);

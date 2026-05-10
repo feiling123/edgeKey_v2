@@ -137,15 +137,15 @@ export async function logAdminOperation(input: {
   targetId?: string;
   detail?: string;
 }, options?: { prisma: PrismaClient; adminId: number }) {
-  const context = options ? null : getAdminContext();
-  const prisma = options?.prisma ?? context!.prisma;
-  const adminId = options?.adminId ?? Number(context?.session?.user?.id);
-
-  if (!Number.isFinite(adminId) || adminId <= 0) {
-    return;
-  }
-
   try {
+    const context = options ? null : getAdminContext();
+    const prisma = options?.prisma ?? context!.prisma;
+    const adminId = options?.adminId ?? Number(context?.session?.user?.id);
+
+    if (!Number.isFinite(adminId) || adminId <= 0) {
+      return;
+    }
+
     await prisma.adminOperationLog.create({
       data: {
         adminId,

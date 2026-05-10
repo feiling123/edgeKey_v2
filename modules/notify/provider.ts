@@ -11,6 +11,23 @@ function resolveTelegramParseMode(mode?: TelegramParseMode) {
   return "HTML";
 }
 
+function escapeMarkdownV2(text: string) {
+  return text.replace(/([_*\[\]()~`>#+\-=|{}.!\\])/g, "\\$1");
+}
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function formatTextForParseMode(text: string, mode?: TelegramParseMode) {
+  if (mode === "MARKDOWN_V2") return escapeMarkdownV2(text);
+  if (mode === "HTML") return escapeHtml(text);
+  return text;
+}
+
 async function parseJsonSafely(response: Response) {
   try {
     return (await response.json()) as Record<string, unknown>;
@@ -36,10 +53,11 @@ export function createTelegramAdapter(config: TelegramConfigValue): TelegramProv
         throw badRequestError("Telegram Chat ID 不能为空", "TELEGRAM_CHAT_ID_REQUIRED");
       }
 
-      const parseMode = resolveTelegramParseMode(input.parseMode ?? config.parseMode);
+      const sourceParseMode = input.parseMode ?? config.parseMode;
+      const parseMode = resolveTelegramParseMode(sourceParseMode);
       const body: Record<string, unknown> = {
         chat_id: chatId,
-        text: trimMessage(input.text),
+        text: trimMessage(formatTextForParseMode(input.text, sourceParseMode)),
         disable_web_page_preview: true,
       };
       if (parseMode) {
